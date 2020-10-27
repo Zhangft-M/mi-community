@@ -6,7 +6,10 @@ package org.mi.common.core.constant;
  * @author: Micah
  * @create: 2020-10-22 16:23
  **/
-public interface CacheConstant {
+public interface RedisCacheConstant {
 
+    String TOKEN_PREFIX = "mi_oauth:token:";
+
+    String CLIENT_DETAILS_KEY = "mi:oauth:client:";
 
 }

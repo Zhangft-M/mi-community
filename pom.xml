@@ -26,10 +26,13 @@
         <aliyun-spring-boot.version>1.0.0</aliyun-spring-boot.version>
         <spring-cloud-alibaba.version>2.2.2.RELEASE</spring-cloud-alibaba.version>
         <spring-cloud.version>Hoxton.SR8</spring-cloud.version>
+        <mi-common-version>0.0.1-SNAPSHOT</mi-common-version>
+        <fast-json.version>1.2.70</fast-json.version>
+        <hutool.version>5.3.8</hutool.version>
     </properties>
 
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
         </dependency>
@@ -56,7 +59,7 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -92,6 +95,21 @@
                 <version>${aliyun-spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fast-json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mi</groupId>
+                <artifactId>mi-common-core</artifactId>
+                <version>${mi-common-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

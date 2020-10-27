@@ -15,6 +15,8 @@
     <name>通用层</name>
     <modules>
         <module>mi-common-core</module>
+        <module>mi-common-mp</module>
+        <module>mi-common-security</module>
     </modules>
 
 
