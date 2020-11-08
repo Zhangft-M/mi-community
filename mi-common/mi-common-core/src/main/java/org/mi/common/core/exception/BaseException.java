@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 @EqualsAndHashCode(callSuper = true)
 public class BaseException extends RuntimeException {
 
+    private static final long serialVersionUID = 3700420554380777548L;
+
     private Integer code;
     private String message;
 
@@ -30,5 +32,4 @@ public class BaseException extends RuntimeException {
         this.code = code;
         this.message = message;
     }
-
 }

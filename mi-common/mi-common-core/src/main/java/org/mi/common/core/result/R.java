@@ -74,6 +74,16 @@ public class R<T> extends ResponseEntity<T> {
         return new R<>(HttpStatus.OK);
     }
 
+    /**
+     * 200
+     * @param <T>
+     * @return
+     */
+    public static <T> R<T> success(T t){
+        return getInstance(t,HttpStatus.OK);
+    }
+
+
 
     /**
      * 204
@@ -82,6 +92,15 @@ public class R<T> extends ResponseEntity<T> {
      */
     public static <T> R<T> fail(){
         return new R<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 400
+     * @param <T>
+     * @return
+     */
+    public static <T> R<T> fail(T t,HttpStatus status){
+        return new R<>(t,status);
     }
 
 

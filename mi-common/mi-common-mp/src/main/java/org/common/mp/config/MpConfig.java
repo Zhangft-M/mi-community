@@ -2,14 +2,18 @@ package org.common.mp.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
+import com.baomidou.mybatisplus.core.config.GlobalConfig;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
+import com.baomidou.mybatisplus.core.toolkit.GlobalConfigUtils;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.common.mp.component.CommonFieldHandler;
 import org.common.mp.component.CustomIdGenerator;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @program: mi-community
@@ -17,6 +21,8 @@ import org.springframework.context.annotation.Bean;
  * @author: Micah
  * @create: 2020-10-22 22:32
  **/
+@EnableTransactionManagement
+@MapperScan({"org.mi.biz.post.mapper","org.mi.biz.user.mapper"})
 public class MpConfig {
 
     /**
@@ -31,8 +37,10 @@ public class MpConfig {
     }
 
     @Bean
-    public ConfigurationCustomizer configurationCustomizer() {
-        return configuration -> configuration.setUseDeprecatedExecutor(false);
+    public GlobalConfig globalConfig() {
+        GlobalConfig globalConfig = GlobalConfigUtils.defaults();
+        globalConfig.getDbConfig().setLogicDeleteField("delete");
+        return globalConfig;
     }
 
     @Bean

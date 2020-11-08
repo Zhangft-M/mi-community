@@ -43,11 +43,11 @@ public class PageResult {
         this.records = records;
     }
 
-    public static PageResult getInstance(Long total, Long page, List<?> records){
+    public static PageResult of(Long total, Long page, List<?> records){
         return new PageResult(total,page,records);
     }
 
-    public static PageResult getInstance(Long total, List<?> records){
+    public static PageResult of(Long total, List<?> records){
         return new PageResult(total,records);
     }
 }

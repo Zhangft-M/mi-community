@@ -8,6 +8,7 @@
         <module>mi-auth</module>
         <module>mi-common</module>
         <module>mi-biz</module>
+        <module>mi-api</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -29,6 +30,7 @@
         <mi-common-version>0.0.1-SNAPSHOT</mi-common-version>
         <fast-json.version>1.2.70</fast-json.version>
         <hutool.version>5.3.8</hutool.version>
+        <mi-api.version>0.0.1-SNAPSHOT</mi-api.version>
     </properties>
 
     <dependencies>
@@ -60,17 +62,6 @@
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -110,6 +101,32 @@
                 <groupId>com.mi</groupId>
                 <artifactId>mi-common-core</artifactId>
                 <version>${mi-common-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mi</groupId>
+                <artifactId>mi-common-mp</artifactId>
+                <version>${mi-common-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mi</groupId>
+                <artifactId>mi-api-post</artifactId>
+                <version>${mi-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>me.zhyd.oauth</groupId>
+                <artifactId>JustAuth</artifactId>
+                <version>1.15.8</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.junit.vintage</groupId>
+                        <artifactId>junit-vintage-engine</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

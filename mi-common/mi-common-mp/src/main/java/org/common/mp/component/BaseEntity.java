@@ -21,9 +21,13 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class BaseEntity<T extends Model<?>> extends Model<T> {
 
+    private static final long serialVersionUID = -5885148780827177473L;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    private Boolean delete;
 }

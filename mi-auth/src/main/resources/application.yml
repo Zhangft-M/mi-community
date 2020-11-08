@@ -1,0 +1,16 @@
+server:
+  port: 7071
+spring:
+  application:
+    name: mi-auth
+  datasource:
+    url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/authorization_server
+    username: root
+    password: weihanhan1005
+  redis:
+    host: 121.89.178.219
+auth:
+  third:
+    client-id: 63001e333c6dac343ac5c0e86c244f704ca732b9a7383537d119d9b00724f173
+    client-secret: 08751c6b620ccff59513d43aeaa57f996db2f381c133e2f4268bd62378b1cb8e
+    redirect-uri: http://127.0.0.1:7071/third/callback/gitee

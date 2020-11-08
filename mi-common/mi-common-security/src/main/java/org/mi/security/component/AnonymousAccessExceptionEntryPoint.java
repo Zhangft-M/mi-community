@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
@@ -40,5 +41,6 @@ public class AnonymousAccessExceptionEntryPoint implements AuthenticationEntryPo
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         PrintWriter writer = response.getWriter();
         writer.append(this.objectMapper.writeValueAsString(result));
+
     }
 }
