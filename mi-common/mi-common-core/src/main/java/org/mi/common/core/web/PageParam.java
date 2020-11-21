@@ -1,4 +1,4 @@
-package org.common.mp.component;
+package org.mi.common.core.web;
 
 import lombok.Data;
 

@@ -28,10 +28,10 @@ public class AssertUtil  {
         }
     }
 
-    public static void notNull(Object o){
+    public static void notNull(Object o,String str){
         if (BeanUtil.isEmpty(o)){
             log.warn("空指针异常");
-            throw new NullPointerException();
+            throw new NullPointerException(str);
         }
     }
 

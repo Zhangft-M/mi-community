@@ -3,7 +3,6 @@ package org.common.mp.component;
 import java.util.List;
 
 /**
- * @program: eladmin-cloud
  * @description: 映射基本接口
  * @author: Micah
  * @create: 2020-07-30 15:34

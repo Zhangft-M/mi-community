@@ -1,3 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration = \
   org.mi.common.core.config.RedisConfig,\
-  org.mi.common.core.util.RedisUtils
+  org.mi.common.core.util.RedisUtils,\
+  org.mi.common.core.config.JacksonConfiguration,\
+  org.mi.common.core.config.WebMvcConfiguration

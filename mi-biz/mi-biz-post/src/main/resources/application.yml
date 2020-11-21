@@ -1,0 +1,23 @@
+server:
+  port: 1005
+  servlet:
+    context-path: /mi-community
+spring:
+  datasource:
+    url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: weihanhan1005
+  elasticsearch:
+    rest:
+      uris: http://8.129.40.60:9200
+  redis:
+    host: 8.129.40.60
+aliyun:
+  text:
+    check:
+      access-key-id: LTAI4FnpwWr4jtHc1xzpVqTo
+      access-key-secret: JXijt4li96FfBm6I1Vrfij859lI7az
+logging:
+  file:
+    name: mi-post
+    path: E:\code\logfile

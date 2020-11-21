@@ -91,7 +91,7 @@ public final class QueryUtils {
      * @param clazz
      * @return
      */
-    private static List<Field> getAllFiles(Class<?> clazz, List<Field> fields) {
+    public static List<Field> getAllFiles(Class<?> clazz, List<Field> fields) {
         if (clazz != null) {
             fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
             getAllFiles(clazz.getSuperclass(), fields);

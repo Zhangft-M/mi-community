@@ -1,13 +1,13 @@
 package org.mi.biz.post.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.mi.api.post.entity.Post;
+import org.mi.api.post.entity.Comment;
 
 /**
  * @program: mi-community
  * @description:
  * @author: Micah
- * @create: 2020-11-08 16:32
+ * @create: 2020-11-19 17:59
  **/
-public interface PostMapper extends BaseMapper<Post> {
+public interface CommentMapper extends BaseMapper<Comment> {
 }

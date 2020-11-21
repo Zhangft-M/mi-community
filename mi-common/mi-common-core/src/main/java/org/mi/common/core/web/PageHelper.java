@@ -1,23 +1,19 @@
-package org.common.mp.util;
+package org.mi.common.core.web;
 
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.experimental.UtilityClass;
-import org.common.mp.component.PageParam;
-
 
 import java.util.Collections;
-
 
 /**
  * @program: mi-community
  * @description: 分页工具类
  * @author: Micah
- * @create: 2020-10-22 23:05
+ * @create: 2020-11-15 14:05
  **/
 @UtilityClass
-public class PageUtils {
-
+public class PageHelper {
     private static final String ASC = "asc";
 
     /*public static <T> Page<T> ofPage(Pageable pageable){
@@ -28,7 +24,7 @@ public class PageUtils {
         return page;
     }*/
 
-    public static <T>Page<T> ofPage(PageParam param){
+    public static <T> Page<T> ofPage(PageParam param){
         Page<T> page = new Page<>(param.getCurrentPage(), param.getSize());
         String[] sorts = param.getSort().split(",");
         OrderItem orderItem = new OrderItem();

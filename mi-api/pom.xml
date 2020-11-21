@@ -16,6 +16,7 @@
         <module>mi-api-user</module>
     </modules>
 
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

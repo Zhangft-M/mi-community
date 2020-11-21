@@ -22,7 +22,7 @@ import javax.validation.constraints.Null;
 @Data
 @TableName("mi_post")
 @EqualsAndHashCode(callSuper = true)
-public class PostEntity extends BaseEntity<PostEntity> {
+public class Post extends BaseEntity<Post> {
 
     private static final long serialVersionUID = -6880346309325408139L;
 
@@ -46,18 +46,27 @@ public class PostEntity extends BaseEntity<PostEntity> {
 
     private Integer voteDown;
 
-    private Integer recommend;
+    private Boolean recommend;
+
+    private Long viewCount;
 
     private Integer commentCount;
 
-    private Integer level;
+    private Boolean top;
 
     private Boolean status;
 
-    private Integer viewCount;
+    /**
+     * 是否为精华帖子
+     */
+    private Boolean essence;
+
+    /**
+     * 是否完结
+     */
+    private Boolean ending;
 
     private Integer reward;
-
 
 
 }

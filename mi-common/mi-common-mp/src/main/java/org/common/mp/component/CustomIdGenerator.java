@@ -2,6 +2,7 @@ package org.common.mp.component;
 
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import org.common.mp.util.SnowFlake;
 
 public class CustomIdGenerator implements IdentifierGenerator {
     @Override
@@ -10,6 +11,8 @@ public class CustomIdGenerator implements IdentifierGenerator {
       	String bizKey = entity.getClass().getName();
         //根据bizKey调用分布式ID生成
       	//返回生成的id值即可.
-        return IdWorker.getId();
+        return SnowFlake.nextId();
+        // System.out.println(id);
+        // return id;
     }
 }

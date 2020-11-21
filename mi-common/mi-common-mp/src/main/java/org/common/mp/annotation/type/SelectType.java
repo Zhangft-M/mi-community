@@ -8,10 +8,11 @@ package org.common.mp.annotation.type;
  **/
 public enum SelectType {
 
+
     // jie 2019/6/4 相等
     EQUAL
     // 大于
-    ,GREATER_THAN_NQ
+    , GREATER_THAN_NQ
     // Dong ZhaoYang 2017/8/7 大于等于
     , GREATER_THAN
     // Dong ZhaoYang 2017/8/7 小于
@@ -35,4 +36,9 @@ public enum SelectType {
     // 为空
     , IS_NULL
 
-}
+    // ES查询中的查询方式
+    ,ES_FILTER
+    ,ES_MULTI_MATCH
+    ,ES_MATCH
+
+    }

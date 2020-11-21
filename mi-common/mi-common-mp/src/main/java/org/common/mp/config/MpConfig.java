@@ -13,6 +13,8 @@ import org.common.mp.component.CommonFieldHandler;
 import org.common.mp.component.CustomIdGenerator;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  **/
 @EnableTransactionManagement
 @MapperScan({"org.mi.biz.post.mapper","org.mi.biz.user.mapper"})
+@ComponentScan(value = "org.mi.api.post.mapstruct")
 public class MpConfig {
 
     /**

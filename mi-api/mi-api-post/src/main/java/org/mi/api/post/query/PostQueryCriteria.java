@@ -1,6 +1,10 @@
 package org.mi.api.post.query;
 
 import lombok.Data;
+import org.common.mp.annotation.Query;
+import org.common.mp.annotation.type.SelectType;
+
+import java.time.LocalDateTime;
 
 /**
  * @program: mi-community
@@ -13,7 +17,19 @@ public class PostQueryCriteria  {
 
     private Long id;
 
-    private String title;
+    @Query(blurry = {"username","title","content"})
+    private String keyword;
 
-    private String username;
+    @Query(value = "category_id")
+    private Long categoryId;
+
+    @Query
+    private Boolean top;
+
+    @Query
+    private Boolean essence;
+
+    @Query
+    private Boolean ending;
+
 }
