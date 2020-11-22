@@ -16,6 +16,10 @@ public class IllegalParameterException extends BaseException {
         super(HttpStatus.BAD_REQUEST.value(),"参数错误");
     }
 
+    public IllegalParameterException(String message) {
+        super(HttpStatus.BAD_REQUEST.value(),message);
+    }
+
     public IllegalParameterException(HttpStatus status) {
         super(status);
     }

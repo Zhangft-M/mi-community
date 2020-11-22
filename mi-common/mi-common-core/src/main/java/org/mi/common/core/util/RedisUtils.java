@@ -678,6 +678,16 @@ public class RedisUtils {
         }
     }
 
+    public boolean incrementValue(String key,Long val){
+        try {
+            this.redisTemplate.opsForValue().increment(key,val);
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+            return false;
+        }
+    }
+
     /**
      * @param prefix 前缀
      * @param ids    id

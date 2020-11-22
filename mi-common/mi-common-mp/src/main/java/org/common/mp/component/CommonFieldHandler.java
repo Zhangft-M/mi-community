@@ -25,6 +25,6 @@ public class CommonFieldHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         log.info("start update fill ....");
-        this.setFieldValByName("updateTime", Timestamp.valueOf(LocalDateTime.now()), metaObject);
+        this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
     }
 }

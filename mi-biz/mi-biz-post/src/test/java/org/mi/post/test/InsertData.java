@@ -2,12 +2,18 @@ package org.mi.post.test;
 
 import cn.hutool.core.math.MathUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.mi.api.post.entity.Comment;
 import org.mi.api.post.entity.Post;
 import org.mi.biz.post.MiPostApplication;
+import org.mi.biz.post.service.ICommentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @program: mi-community
@@ -16,8 +22,10 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @create: 2020-11-13 23:54
  **/
 @SpringBootTest(classes = MiPostApplication.class)
-@RequiredArgsConstructor
 public class InsertData {
+
+    @Autowired
+    private ICommentService commentService;
 
     String[] title = new String[]{"烦死啦", "可惜了", "然后勒"};
 
@@ -27,7 +35,7 @@ public class InsertData {
 
     Long[] postIds = new Long[]{526541970320142336L, 526541972513763328L, 526541972773810176L};
 
-    Long[] parentIds = new Long[]{526923853394620416L, 526923855487578112L, 526923855726653440L,526923855969923072L,526923856213192704L};
+    Long[] parentIds = new Long[]{526923853394620416L, 526923855487578112L, 526923855726653440L, 526923855969923072L, 526923856213192704L};
 
     @Test
     public void insert() {
@@ -64,6 +72,16 @@ public class InsertData {
             comment.setHasDelete(false);
             comment.insert();
         }
+    }
+
+    @Test
+    public void updateCommentData() {
+        Comment comment1 = Comment.builder().id(526923261028872192L).voteUp(10).build();
+        Comment comment2 = Comment.builder().id(526923263142801408L).voteUp(10).build();
+        List<Comment> commentList = new ArrayList<>();
+        commentList.add(comment1);
+        commentList.add(comment2);
+        this.commentService.updateBatchById(commentList);
     }
 
 }

@@ -35,7 +35,7 @@ public class PostController {
     }
 
     @GetMapping("{id}")
-    public R<EsPost> getById(@PathVariable Long id){
+    public R<EsPost> getById(@PathVariable() Long id){
         EsPost result = this.postService.getDataById(id);
         return R.success(result);
     }

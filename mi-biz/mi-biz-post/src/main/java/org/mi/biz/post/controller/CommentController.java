@@ -27,4 +27,5 @@ public class CommentController {
         List<CommentTree> commentTree = this.commentService.list(postId);
         return R.success(commentTree);
     }
+
 }
