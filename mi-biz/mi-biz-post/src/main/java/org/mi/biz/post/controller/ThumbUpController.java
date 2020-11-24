@@ -2,12 +2,12 @@ package org.mi.biz.post.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.mi.api.post.entity.ThumbUp;
-import org.mi.api.post.vo.ThumbUpVO;
 import org.mi.biz.post.service.IThumbUpService;
 import org.mi.common.core.result.R;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @program: mi-community
@@ -24,12 +24,12 @@ public class ThumbUpController {
     private final IThumbUpService thumbUpService;
 
     @GetMapping("{userId}")
-    public R<ThumbUpVO> listByUserId(@PathVariable Long userId){
-        ThumbUpVO result = this.thumbUpService.listByUserId(userId);
+    public R<Set<Long>> listByUserId(@PathVariable Long userId){
+        Set<Long> result = this.thumbUpService.listByUserId(userId);
         return R.success(result);
     }
 
-    @PutMapping("thumbUp")
+    @PutMapping
     public R<Void> thumbUp(@RequestBody ThumbUp thumbUp){
         this.thumbUpService.thumbUp(thumbUp);
         return R.success();

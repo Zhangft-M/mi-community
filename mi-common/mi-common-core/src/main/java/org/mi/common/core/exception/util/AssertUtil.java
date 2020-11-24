@@ -24,7 +24,7 @@ public class AssertUtil  {
 
     public static void notNull(Object... o){
         for (Object o1 : o) {
-            notNull(o1);
+            notNull(o1,"参数为空不符合要求");
         }
     }
 

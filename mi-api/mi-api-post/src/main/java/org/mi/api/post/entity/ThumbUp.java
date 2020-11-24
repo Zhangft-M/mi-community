@@ -15,7 +15,7 @@ import org.common.mp.component.BaseEntity;
  * @create: 2020-11-22 13:59
  **/
 @Data
-@TableName("mi_comment_thumb_up")
+@TableName("mi_thumb_up")
 @EqualsAndHashCode(callSuper = true)
 public class ThumbUp extends BaseEntity<ThumbUp> {
 
@@ -30,4 +30,6 @@ public class ThumbUp extends BaseEntity<ThumbUp> {
 
     @TableField(exist = false)
     private Integer type;
+
+    private Boolean hasDelete;
 }

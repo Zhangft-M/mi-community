@@ -1,7 +1,6 @@
 package org.mi.biz.post.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +12,7 @@ import org.mi.api.post.mapstruct.EsCommentMapStruct;
 import org.mi.api.post.vo.CommentTree;
 import org.mi.biz.post.mapper.CommentMapper;
 import org.mi.biz.post.service.ICommentService;
+import org.mi.biz.post.util.ContentVerifyHelper;
 import org.mi.common.core.constant.ThumbUpConstant;
 import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.util.AssertUtil;
@@ -40,6 +40,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper,Comment> imple
 
     private final ElasticsearchRestTemplate elasticsearchRestTemplate;
 
+    private final ContentVerifyHelper contentVerifyHelper;
+
     private final RedisUtils redisUtils;
 
     private final EsCommentMapStruct commentMapStruct;
@@ -53,10 +55,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper,Comment> imple
         SearchHits<EsComment> result = this.elasticsearchRestTemplate.search(query, EsComment.class);
         List<CommentTree> commentList = result.stream().map(
                 data -> {
-                    this.redisUtils.set(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId(), data.getContent().getVoteUp());
+                    Integer voteUpCount = (Integer) this.redisUtils.get(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId());
+                    if (!Objects.isNull(voteUpCount)){
+                        // 命中缓存，更新一下点赞数
+                        data.getContent().setVoteUp(voteUpCount);
+                    }else {
+                        this.redisUtils.set(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId(), data.getContent().getVoteUp());
+                    }
                     return this.commentMapStruct.toDto(data.getContent());
-                })
-                .sorted(Comparator.comparingInt(CommentTree::getVoteUp).reversed()).collect(Collectors.toList());
+                }).sorted(Comparator.comparingInt(CommentTree::getVoteUp).reversed()).collect(Collectors.toList());
         List<CommentTree> commentTree = this.createCommentTree(commentList);
         commentTree.forEach(data -> {
             secondFloorData = new ArrayList<>();
@@ -67,6 +74,20 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper,Comment> imple
             }
         });
         return commentTree;
+    }
+
+    @Override
+    public CommentTree insertComment(Comment comment) {
+        String content = comment.getContent();
+        this.contentVerifyHelper.checkContent(comment,content);
+        // 待审核或者已经审核通过的
+        boolean insert = comment.insert();
+        if (insert && comment.getStatus()){
+            // 审核通过的，直接从索引库查找并返回数据
+            EsComment esComment = this.elasticsearchRestTemplate.get(String.valueOf(comment.getId()), EsComment.class);
+            return Optional.ofNullable(this.commentMapStruct.toDto(esComment)).orElseGet(CommentTree::new);
+        }
+        return null;
     }
 
     private void getSecondFloorTree(CommentTree data, Long id) {

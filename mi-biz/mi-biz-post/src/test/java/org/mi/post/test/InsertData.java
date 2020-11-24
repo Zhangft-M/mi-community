@@ -7,13 +7,17 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.mi.api.post.entity.Comment;
 import org.mi.api.post.entity.Post;
+import org.mi.api.post.entity.ThumbUp;
 import org.mi.biz.post.MiPostApplication;
 import org.mi.biz.post.service.ICommentService;
+import org.mi.biz.post.service.IThumbUpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @program: mi-community
@@ -26,6 +30,9 @@ public class InsertData {
 
     @Autowired
     private ICommentService commentService;
+
+    @Autowired
+    private IThumbUpService thumbUpService;
 
     String[] title = new String[]{"烦死啦", "可惜了", "然后勒"};
 
@@ -82,6 +89,37 @@ public class InsertData {
         commentList.add(comment1);
         commentList.add(comment2);
         this.commentService.updateBatchById(commentList);
+    }
+
+    @Test
+    public void UpdateTest() {
+        ThumbUp thumbUp = new ThumbUp();
+        thumbUp.setUserId(1L);
+        thumbUp.setContentId(526924235894173696L);
+        thumbUp.setHasDelete(false);
+        ThumbUp thumbUp2 = new ThumbUp();
+        thumbUp2.setUserId(1L);
+        thumbUp2.setContentId(526923855969923072L);
+        thumbUp2.setHasDelete(false);
+        this.thumbUpService.update(Wrappers.<ThumbUp>lambdaUpdate()
+                .eq(ThumbUp::getUserId,thumbUp.getUserId())
+                .set(ThumbUp::getHasDelete,true));
+        this.thumbUpService.saveOrUpdate(thumbUp,Wrappers.<ThumbUp>lambdaUpdate()
+                .eq(ThumbUp::getUserId,thumbUp.getUserId())
+                .eq(ThumbUp::getContentId,thumbUp.getContentId())
+                .set(ThumbUp::getHasDelete,thumbUp.getHasDelete()));
+        // thumbUp.setHasDelete(false);
+        // this.thumbUpService.saveOrUpdateBatch(Arrays.asList(thumbUp,thumbUp2));
+        /*ThumbUp thumb = this.thumbUpService.getOne(Wrappers.<ThumbUp>lambdaQuery(thumbUp));
+        thumbUp.setHasDelete(false);
+        if (!Objects.isNull(thumb)){
+            // 更新hasdelete的值
+            thumbUp.setId(thumb.getId());
+            this.thumbUpService.updateById(thumbUp);
+        }else {
+            // 插入操作
+            this.thumbUpService.save(thumbUp);
+        }*/
     }
 
 }

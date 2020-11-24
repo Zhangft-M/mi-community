@@ -500,6 +500,16 @@ public class RedisUtils {
         }
     }
 
+    public boolean sAdd(String key,Object val){
+        try {
+            this.redisTemplate.opsForSet().add(key,val);
+            return true;
+        }catch (Exception e){
+            log.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
     /**
      * 移除值为value的
      *

@@ -1,6 +1,7 @@
 package org.mi.biz.post.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.mi.api.post.entity.Comment;
 import org.mi.api.post.vo.CommentTree;
 import org.mi.biz.post.service.ICommentService;
 import org.mi.common.core.result.R;
@@ -25,6 +26,12 @@ public class CommentController {
     @GetMapping("{postId}")
     public R<List<CommentTree>> list(@PathVariable Long postId){
         List<CommentTree> commentTree = this.commentService.list(postId);
+        return R.success(commentTree);
+    }
+
+    @PostMapping
+    public R<CommentTree> insertComment(@RequestBody Comment comment){
+        CommentTree commentTree = this.commentService.insertComment(comment);
         return R.success(commentTree);
     }
 

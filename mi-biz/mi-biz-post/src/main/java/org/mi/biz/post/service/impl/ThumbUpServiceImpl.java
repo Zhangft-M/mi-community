@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.mi.api.post.entity.ThumbUp;
-import org.mi.api.post.vo.ThumbUpVO;
 import org.mi.biz.post.mapper.ThumbUpMapper;
 import org.mi.biz.post.service.IThumbUpService;
 import org.mi.common.core.constant.ThumbUpConstant;
@@ -14,10 +13,7 @@ import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.util.RedisUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,10 +36,9 @@ public class ThumbUpServiceImpl extends ServiceImpl<ThumbUpMapper, ThumbUp> impl
         if (type == 1 || type == -1) {
             if (type.equals(-1)) {
                 // 记录点赞的用户id以及对点赞内容的id
-                this.redisUtils.lRemove(ThumbUpConstant.USER_CONTENT_PREFIX + thumbUp.getUserId(),
-                        1, thumbUp.getContentId());
+                this.redisUtils.setRemove(ThumbUpConstant.USER_CONTENT_PREFIX + thumbUp.getUserId(), thumbUp.getContentId());
             } else {
-                this.redisUtils.lSet(ThumbUpConstant.USER_CONTENT_PREFIX + thumbUp.getUserId(), thumbUp.getContentId());
+                this.redisUtils.sAdd(ThumbUpConstant.USER_CONTENT_PREFIX + thumbUp.getUserId(), thumbUp.getContentId());
             }
             // 在redis中将对应的内容的点赞的值加1或者减1
             this.redisUtils.incrementValue(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + thumbUp.getContentId(), type.longValue());
@@ -53,21 +48,23 @@ public class ThumbUpServiceImpl extends ServiceImpl<ThumbUpMapper, ThumbUp> impl
     }
 
     @Override
-    public ThumbUpVO listByUserId(Long userId) {
-        List<Object> list = this.redisUtils.lGet(ThumbUpConstant.USER_CONTENT_PREFIX, 0, -1);
-        ThumbUpVO thumbUpVO = new ThumbUpVO();
-        List<Long> results = new ArrayList<>();
+    public Set<Long> listByUserId(Long userId) {
+        Set<Object> list = this.redisUtils.sGet(ThumbUpConstant.USER_CONTENT_PREFIX + userId);
+        // List<Object> list = this.redisUtils.lGet(ThumbUpConstant.USER_CONTENT_PREFIX, 0, -1);
+        Set<Long> results = new HashSet<>();
         if (CollUtil.isNotEmpty(list)) {
-            results.addAll(list.stream().map(data -> (Long) data).collect(Collectors.toList()));
+            results.addAll(list.stream().map(data -> (Long) data).collect(Collectors.toSet()));
         } else {
-            List<ThumbUp> thumbUps = this.baseMapper.selectList(Wrappers.<ThumbUp>lambdaQuery().eq(ThumbUp::getUserId, userId));
-            Optional.ofNullable(thumbUps).ifPresent(datas -> {
-                results.addAll(datas.stream().map(ThumbUp::getContentId).collect(Collectors.toList()));
-                this.redisUtils.lSet(ThumbUpConstant.USER_CONTENT_PREFIX + userId, results);
-            });
+            List<ThumbUp> thumbUps = this.baseMapper.selectList(Wrappers.<ThumbUp>lambdaQuery()
+                    .eq(ThumbUp::getUserId, userId)
+                    .eq(ThumbUp::getHasDelete,false));
+            if (CollUtil.isNotEmpty(thumbUps)){
+                results.addAll(thumbUps.stream().map(data->{
+                    this.redisUtils.sAdd(ThumbUpConstant.USER_CONTENT_PREFIX + userId,data.getContentId());
+                    return data.getContentId();
+                }).collect(Collectors.toSet()));
+            }
         }
-        thumbUpVO.setUserId(userId);
-        thumbUpVO.setContentId(results);
-        return thumbUpVO;
+        return results;
     }
 }

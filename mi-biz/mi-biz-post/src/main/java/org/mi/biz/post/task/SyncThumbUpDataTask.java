@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -52,7 +53,7 @@ public class SyncThumbUpDataTask {
      */
     @Scheduled(cron = "* * 0 * * ?")
     @Transactional(rollbackFor = Exception.class)
-    public void syncCommentVoteUpData(){
+    public void syncVoteUpData(){
       log.info("----------------------------开始同步点赞数据,开始时间为{}------------------------------",LocalDateTime.now());
       try {
           List<String> keyList = this.redisUtils.scan(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + "*");
@@ -80,28 +81,41 @@ public class SyncThumbUpDataTask {
      */
     @Scheduled(cron = "* * 0 * * ?")
     @Transactional(rollbackFor = Exception.class)
-    public void syncUserCommentThumbUpData(){
+    public void syncThumbUpData(){
         log.info("----------------------------开始同步用户与点赞评论数据,开始时间为{}------------------------------",LocalDateTime.now());
         try {
             List<String> keyList = this.redisUtils.scan(ThumbUpConstant.USER_CONTENT_PREFIX + "*");
-            Map<Long,List<ThumbUp>> map = new HashMap<>();
+            Map<String,List<ThumbUp>> map = new HashMap<>();
             keyList.forEach(key->{
-                List<ThumbUp> thumbUpList = this.redisUtils.lGet(key, 0, -1).stream().map(data -> {
+                Set<Object> set = this.redisUtils.sGet(key);
+                List<ThumbUp> thumbUpList = set.stream().map(data -> {
                     ThumbUp thumbUp = new ThumbUp();
                     thumbUp.setContentId((Long) data);
-                    thumbUp.setUserId(Long.valueOf(key));
+                    thumbUp.setUserId(Long.valueOf(key.split(":")[2]));
                     thumbUp.setHasDelete(false);
                     return thumbUp;
                 }).collect(Collectors.toList());
-                map.put(Long.valueOf(key),thumbUpList);
+                map.put(key,thumbUpList);
             });
-            for (Long userId : map.keySet()) {
-                this.thumbUpService.remove(Wrappers.<ThumbUp>lambdaUpdate().eq(ThumbUp::getUserId,userId));
-                this.thumbUpService.saveOrUpdateBatch(map.get(userId));
-                this.redisUtils.del(String.valueOf(userId));
-                map.remove(userId);
+            for (String key : map.keySet()) {
+                // this.thumbUpService.remove(Wrappers.<ThumbUp>lambdaUpdate().eq(ThumbUp::getUserId,key.split(":")[2]));
+                this.thumbUpService.update(Wrappers.<ThumbUp>lambdaUpdate()
+                        .eq(ThumbUp::getUserId,key.split(":")[2])
+                        .set(ThumbUp::getHasDelete,true));
+                map.get(key).forEach(data->{
+                    this.thumbUpService.saveOrUpdate(data,Wrappers.<ThumbUp>lambdaUpdate()
+                            .eq(ThumbUp::getUserId,data.getUserId())
+                            .eq(ThumbUp::getContentId,data.getContentId())
+                            .set(ThumbUp::getHasDelete,false));
+                });
             }
             log.info("-----------------------同步点赞完成,同步的时间为{}--------------------------", LocalDateTime.now());
+            log.info("-----------------------开始删除缓存数据,开始时间为{}-------------------------",LocalDateTime.now());
+            for (String key : map.keySet()) {
+                this.redisUtils.del(String.valueOf(key));
+                map.remove(key);
+            }
+            log.info("-----------------------删除数据,完成时间为{}-------------------------",LocalDateTime.now());
         }catch (Exception e){
             log.info("同步数据失败,通知管理员");
             throw new RuntimeException("同步数据失败");

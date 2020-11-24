@@ -24,10 +24,13 @@ import org.mi.api.post.query.PostQueryCriteria;
 import org.mi.api.post.vo.PostVO;
 import org.mi.biz.post.mapper.PostMapper;
 import org.mi.biz.post.service.IPostService;
+import org.mi.biz.post.util.ContentVerifyHelper;
 import org.mi.common.core.constant.ContentCheckConstant;
+import org.mi.common.core.constant.ThumbUpConstant;
 import org.mi.common.core.exception.ContentNotSaveException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.PageResult;
+import org.mi.common.core.util.RedisUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -56,6 +59,10 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     private final IAcsClient acsClient;
 
+    private final ContentVerifyHelper contentVerifyHelper;
+
+    private final RedisUtils redisUtils;
+
     private final ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     private static final Boolean IS_RECOMMEND = true;
@@ -65,7 +72,17 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         AssertUtil.idIsNotNull(id);
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         SearchHit<EsPost> one = this.elasticsearchRestTemplate.searchOne(builder.withQuery(QueryBuilders.termQuery("_id", id)).build(), EsPost.class);
-        return Optional.ofNullable(one.getContent()).orElseGet(EsPost::new);
+        AssertUtil.notNull(one);
+        // 查询缓存，记录是否有点赞记录
+        Integer count = (Integer) this.redisUtils.get(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
+        if (!Objects.isNull(count)){
+            // 更新数据
+            one.getContent().setVoteUp(count);
+        }else {
+            // 保存一份缓存
+            this.redisUtils.set(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id,one.getContent().getVoteUp());
+        }
+        return one.getContent();
     }
 
     @Override
@@ -142,18 +159,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
                 .filter(QueryBuilders.termQuery("status", true));
     }
 
-    /*private void initSortCriteria(String sort, NativeSearchQueryBuilder searchQueryBuilder) {
-        if (StrUtil.isBlank(sort)){
-            log.info("排序字段为空,默认使用日期降序排序");
-            searchQueryBuilder.withSort(SortBuilders.fieldSort("create_time").order(SortOrder.DESC));
-            return;
-        }
-        // 默认第一个为排序字段，第二个为排序规则
-        String[] sorts = sort.split(",");
-        SortOrder sortOrder = SortOrder.DESC.toString().equalsIgnoreCase(sorts[1]) ? SortOrder.DESC : SortOrder.ASC;
-        searchQueryBuilder.withSort(SortBuilders.fieldSort(sorts[0]).order(sortOrder));
-    }*/
-
     /**
      * 初始化过滤查询条件
      *
@@ -213,7 +218,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     public void savePost(Post postEntity) {
         AssertUtil.idIsNull(postEntity.getId());
         // 对内容进行校验
-        this.checkContent(postEntity);
+        this.contentVerifyHelper.checkContent(postEntity, postEntity.getTitle() + postEntity.getContent());
         // TODO: 2020/11/8 通过用户的id来查询用户拥有的积分
         // .....
         // TODO: 2020/11/8 方案一：先添加，然后再扣除积分，如果积分足够，则成功，积分不够直接抛出异常
@@ -229,8 +234,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     public void updatePost(Post postEntity) {
         AssertUtil.idIsNotNull(postEntity.getId());
         // 通过用户的id和帖子的id来查询数据，确保传递过来额参数的正确性
-
-        this.checkContent(postEntity);
+        this.contentVerifyHelper.checkContent(postEntity, postEntity.getTitle() + postEntity.getContent());
         if (postEntity.updateById()) {
             // TODO: 2020/11/8 访问用户微服务，查询用户以及相关积分信息
         }
@@ -243,92 +247,4 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         // TODO: 2020/11/8 通过用户的id查询用户发的帖子
     }
 
-
-    @SneakyThrows
-    private void checkContent(Post postEntity) {
-        // 获取请求对象
-        TextScanRequest textScanRequest = this.getTextScanRequest(postEntity);
-        // 发送请求
-        HttpResponse response = this.acsClient.doAction(textScanRequest);
-        if (response.isSuccess()) {
-            // 校验成功
-            // 序列化为Json对象
-            JSONObject result = JSONUtil.parseObj(new String(response.getHttpContent(), StandardCharsets.UTF_8));
-            if (HttpStatus.OK.value() == result.getInt(ContentCheckConstant.CODE)) {
-                JSONArray taskResults = result.getJSONArray("data");
-                for (Object taskResult : taskResults) {
-                    if (HttpStatus.OK.value() == ((JSONObject) taskResult).getInt(ContentCheckConstant.CODE)) {
-                        JSONArray sceneResults = ((JSONObject) taskResult).getJSONArray(ContentCheckConstant.RESULTS);
-                        for (Object sceneResult : sceneResults) {
-                            // String scene = ((JSONObject) sceneResult).getStr(ContentCheckConstant.SCENE);
-                            String suggestion = ((JSONObject) sceneResult).getStr(ContentCheckConstant.SUGGESTION);
-                            // 处理结果
-                            this.dealResult(suggestion, postEntity);
-                            if (log.isDebugEnabled()) {
-                                log.debug("检测的内容:{},处理建议{}", ((JSONObject) taskResult).get("content"), suggestion);
-                            }
-                        }
-                    } else {
-                        System.out.println("task process fail:" + ((JSONObject) taskResult).get("code"));
-                    }
-                }
-            }
-        } else {
-            // 检测失败
-        }
-
-    }
-
-    /**
-     * 处理内容验证后的结果
-     *
-     * @param suggestion
-     * @param postEntity
-     */
-    private void dealResult(String suggestion, Post postEntity) {
-        switch (suggestion) {
-            case ContentCheckConstant.PASS:
-                postEntity.setStatus(true);
-                break;
-            case ContentCheckConstant.REVIEW:
-                postEntity.setStatus(false);
-                postEntity.setHasDelete(false);
-                break;
-            case ContentCheckConstant.BLOCK:
-                throw new ContentNotSaveException(HttpStatus.BAD_REQUEST.value(), "内容有违法信息，请更改");
-            default:
-                break;
-        }
-    }
-
-    /**
-     * 初始化文本验证请求对象
-     *
-     * @param postEntity
-     * @return
-     */
-    @SneakyThrows
-    private TextScanRequest getTextScanRequest(Post postEntity) {
-        TextScanRequest textScanRequest = new TextScanRequest();
-        // 指定API返回格式。
-        textScanRequest.setSysAcceptFormat(FormatType.JSON);
-        textScanRequest.setHttpContentType(FormatType.JSON);
-        // 指定请求方法。
-        textScanRequest.setSysMethod(com.aliyuncs.http.MethodType.POST);
-        textScanRequest.setSysEncoding("UTF-8");
-        textScanRequest.setSysRegionId("cn-shanghai");
-        List<Map<String, Object>> tasks = new ArrayList<Map<String, Object>>();
-        Map<String, Object> task1 = new LinkedHashMap<String, Object>();
-        task1.put("dataId", UUID.randomUUID().toString());
-        // 检测的内容,标题加上内容,长度不超过10000个字符。
-        task1.put("content", postEntity.getTitle() + postEntity.getContent());
-        tasks.add(task1);
-        JSONObject data = new JSONObject();
-        data.set("scenes", Collections.singletonList("antispam"));
-        data.set("tasks", tasks);
-        textScanRequest.setHttpContent(data.toJSONString(4).getBytes(StandardCharsets.UTF_8), "UTF-8", FormatType.JSON);
-        textScanRequest.setSysConnectTimeout(3000);
-        textScanRequest.setSysReadTimeout(6000);
-        return textScanRequest;
-    }
 }

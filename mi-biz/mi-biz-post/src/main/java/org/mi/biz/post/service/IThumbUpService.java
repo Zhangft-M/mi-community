@@ -2,9 +2,9 @@ package org.mi.biz.post.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.mi.api.post.entity.ThumbUp;
-import org.mi.api.post.vo.ThumbUpVO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @program: mi-community
@@ -24,5 +24,5 @@ public interface IThumbUpService extends IService<ThumbUp> {
      * @param userId
      * @return
      */
-    ThumbUpVO listByUserId(Long userId);
+    Set<Long> listByUserId(Long userId);
 }
