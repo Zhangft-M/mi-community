@@ -1,7 +1,11 @@
 package org.mi.auth.config;
 
+import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
+import org.mi.auth.component.CustomTokenEnhancer;
 import org.mi.common.core.constant.RedisCacheConstant;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -10,15 +14,15 @@ import org.springframework.security.core.token.TokenService;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenEnhancer;
-import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.*;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 
 import java.security.KeyPair;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * @program: mi-community
@@ -32,18 +36,23 @@ public class Oauth2AuthorizationTokenConfig {
 
     private final RedisConnectionFactory redisConnectionFactory;
 
+    private final TokenEnhancer customTokenEnhancer;
+
 
     @Bean
-    public TokenStore redisTokenStore(){
-        RedisTokenStore redisTokenStore = new RedisTokenStore(redisConnectionFactory);
+    public TokenStore tokenStore(){
+        return new JwtTokenStore(jwtAccessTokenConverter());
+        /*RedisTokenStore redisTokenStore = new RedisTokenStore(redisConnectionFactory);
         redisTokenStore.setPrefix(RedisCacheConstant.TOKEN_PREFIX);
-        return redisTokenStore;
+        return redisTokenStore;*/
     }
 
     /**
      * jwt 令牌 配置，非对称加密
-     *JwtAccessTokenConverter类实现了{@link TokenEnhancer},在创建token的时候会调用{@link DefaultTokenServices#createAccessToken(OAuth2Authentication authentication) 方法}
-     * 在该方法内部最后一段代码就判断是否存在TokenEnhancer的实例，如果存在则对token进行加强，最后生成的JWT实际是调用 {@link JwtAccessTokenConverter#enhance 方法 }
+     *JwtAccessTokenConverter类实现了{@link TokenEnhancer},在创建token的时候会调用
+     * {@link DefaultTokenServices#createAccessToken(OAuth2Authentication authentication) 方法}
+     * 在该方法内部最后一段代码就判断是否存在TokenEnhancer的实例，如果存在则对token进行加强，
+     * 最后生成的JWT实际是调用 {@link JwtAccessTokenConverter#enhance 方法 }
      * 在该方法中这段代码是关键代码 result.setValue(encode(result, authentication));
      * @return 转换器
      */
@@ -67,7 +76,11 @@ public class Oauth2AuthorizationTokenConfig {
     }
 
 
-    @Bean
+    /**
+     * token增强
+     * @return /
+     */
+    /*@Bean
     public TokenEnhancer customTokenEnhancer(){
         return new TokenEnhancer() {
             @Override
@@ -77,5 +90,14 @@ public class Oauth2AuthorizationTokenConfig {
                 return token;
             }
         };
+    }*/
+
+    @Bean
+    public TokenEnhancer tokenEnhancer(){
+        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+
+        tokenEnhancerChain.setTokenEnhancers(Lists.newArrayList(customTokenEnhancer,jwtAccessTokenConverter()));
+        return tokenEnhancerChain;
     }
+
 }

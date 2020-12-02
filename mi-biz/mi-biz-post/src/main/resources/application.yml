@@ -12,6 +12,11 @@ spring:
       uris: http://8.129.40.60:9200
   redis:
     host: 8.129.40.60
+  application:
+    name: MI-POST-SERVER
+  cloud:
+    nacos:
+      server-addr: 39.97.76.127
 aliyun:
   text:
     check:

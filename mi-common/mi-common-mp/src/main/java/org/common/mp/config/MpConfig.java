@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  **/
 @EnableTransactionManagement
 @MapperScan({"org.mi.biz.post.mapper","org.mi.biz.user.mapper"})
-@ComponentScan(value = "org.mi.api.post.mapstruct")
+@ComponentScan(value = {"org.mi.api.*.mapstruct"})
 public class MpConfig {
 
     /**

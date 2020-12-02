@@ -1,4 +1,4 @@
-package org.mi.auth.service;
+package org.mi.auth.service.impl;
 
 import lombok.SneakyThrows;
 import org.mi.common.core.constant.AuthClientConstant;

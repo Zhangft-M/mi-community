@@ -1,5 +1,6 @@
 package org.mi.auth.config;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import me.zhyd.oauth.config.AuthConfig;
@@ -8,6 +9,8 @@ import me.zhyd.oauth.request.AuthRequest;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Map;
 
 
 /**
@@ -19,17 +22,24 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Getter
 @Configuration
-@ConfigurationProperties(prefix = "auth.third")
-public class ThirdAuthConfig {
+@ConfigurationProperties(prefix = "auth.social")
+public class SocialAuthConfig {
 
-    private String clientId;
+    private Map<String,ConfigProperties> param;
 
-    private String clientSecret;
+    @Data
+    class ConfigProperties{
+        private String clientId;
 
-    /**
-     * 登录成功后的回调地址
-     */
-    private String redirectUri;
+        private String clientSecret;
+
+        /**
+         * 登录成功后的回调地址
+         */
+        private String redirectUri;
+    }
+
+
 
     /**
      * 支付宝公钥：当选择支付宝登录时，该值可用
@@ -60,13 +70,4 @@ public class ThirdAuthConfig {
      */
     private String agentId = "";
 
-
-    @Bean
-    public AuthRequest authRequest(){
-        return new AuthGiteeRequest(AuthConfig.builder()
-                .clientId(this.clientId)
-                .clientSecret(this.clientSecret)
-                .redirectUri(this.redirectUri)
-                .build());
-    }
 }

@@ -32,6 +32,10 @@
         <hutool.version>5.3.8</hutool.version>
         <mi-api.version>0.0.1-SNAPSHOT</mi-api.version>
         <map-struct.version>1.4.1.Final</map-struct.version>
+        <rocketMq.version>2.1.0</rocketMq.version>
+        <mi-auth-server.name>MI-AUTH-SERVER</mi-auth-server.name>
+        <mi-post-server.name>MI-POST-SERVER</mi-post-server.name>
+        <mi-user-server.name>MI-USER-SERVER</mi-user-server.name>
     </properties>
 
     <dependencies>
@@ -138,6 +142,21 @@
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct-processor</artifactId>
                 <version>${map-struct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-spring-boot-starter</artifactId>
+                <version>${rocketMq.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>commons-collections</artifactId>
+                        <groupId>commons-collections</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

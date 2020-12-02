@@ -1,1 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration =\
+  org.mi.security.aspect.InnerAspect,\
+  org.mi.security.component.OAuth2FeignRequestInterceptor

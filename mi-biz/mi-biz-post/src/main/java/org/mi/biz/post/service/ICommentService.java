@@ -24,8 +24,8 @@ public interface ICommentService extends IService<Comment> {
 
     /**
      * 插入一条数据
-     * @param comment
-     * @return
+     * @param comment /
+     * @return /
      */
     CommentTree insertComment(Comment comment);
 }

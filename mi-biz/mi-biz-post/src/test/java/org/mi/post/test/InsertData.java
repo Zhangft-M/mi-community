@@ -83,12 +83,12 @@ public class InsertData {
 
     @Test
     public void updateCommentData() {
-        Comment comment1 = Comment.builder().id(526923261028872192L).voteUp(10).build();
+        /*Comment comment1 = Comment.builder().id(526923261028872192L).voteUp(10).build();
         Comment comment2 = Comment.builder().id(526923263142801408L).voteUp(10).build();
         List<Comment> commentList = new ArrayList<>();
         commentList.add(comment1);
         commentList.add(comment2);
-        this.commentService.updateBatchById(commentList);
+        this.commentService.updateBatchById(commentList);*/
     }
 
     @Test

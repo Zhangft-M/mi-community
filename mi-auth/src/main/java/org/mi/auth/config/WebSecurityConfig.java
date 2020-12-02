@@ -31,7 +31,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/actuator/**",
                         "/oauth/**",
                         "/token/**",
-                        "/third/**").permitAll()
+                        "/third/**",
+                        "/verifyCode/login/**").permitAll()
                 .anyRequest().authenticated()
                 .and().csrf().disable();
     }

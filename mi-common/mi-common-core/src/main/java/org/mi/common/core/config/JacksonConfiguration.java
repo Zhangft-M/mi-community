@@ -2,6 +2,7 @@ package org.mi.common.core.config;
 
 import cn.hutool.core.date.DatePattern;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mi.common.core.serializer.CustomDateFormat;
 import org.mi.common.core.serializer.DateSerializerModule;
 import org.mi.common.core.serializer.LongSerializerModule;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.Locale;
 import java.util.TimeZone;

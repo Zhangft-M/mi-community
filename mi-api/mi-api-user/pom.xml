@@ -11,5 +11,20 @@
 
     <artifactId>mi-api-user</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.mi</groupId>
+            <artifactId>mi-common-mp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+        </dependency>
+    </dependencies>
+
 
 </project>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.mi.biz.user.mapper.MiUserMapper">
+    <resultMap id="baseUserMap" type="org.mi.api.user.entity.MiUser">
+        <id property="id" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="avatar" column="avatar"/>
+        <result property="email" column="email"/>
+        <result property="gender" column="gender"/>
+        <result property="status" column="status"/>
+        <result property="password" column="password"/>
+        <result property="point" column="point"/>
+        <result property="postCount" column="post_count"/>
+        <result property="lastLoginIp" column="last_login_ip"/>
+        <result property="lastLoginTime" column="last_login_time"/>
+        <result property="phone" column="phone"/>
+        <result property="hasDelete" column="has_delete"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+    <resultMap id="userWithRoleMap" type="org.mi.api.user.entity.MiUser" extends="baseUserMap">
+        <collection property="roles" resultMap="org.mi.biz.user.mapper.MiRoleMapper.baseRoleMap" ofType="org.mi.api.user.entity.MiRole"/>
+    </resultMap>
+
+    <sql id="baseUserSql">
+        ${property}.id as user_id,
+        ${property}.username,
+        ${property}.password,
+        ${property}.gender,
+        ${property}.phone,
+        ${property}.email,
+        ${property}.point,
+        ${property}.post_count,
+        ${property}.avatar,
+        ${property}.status,
+        ${property}.has_delete
+    </sql>
+
+    <select id="selectUserWithRoleByCertificate" resultMap="userWithRoleMap">
+        select
+        <include refid="baseUserSql">
+            <property name="property" value="mu"/>
+        </include>
+        ,
+        <include refid="org.mi.biz.user.mapper.MiRoleMapper.baseRoleSql">
+            <property name="property" value="mr"/>
+        </include>
+        from (mi_user mu) left join mi_user_role mur on mu.id = mur.user_id
+        left join mi_role mr on mur.role_id = mr.id
+        <where>
+            <if test="type == 0">
+                mu.username = #{certificate}
+            </if>
+            <if test="type == 1">
+                mu.phone = #{certificate}
+            </if>
+        </where>
+    </select>
+</mapper>
