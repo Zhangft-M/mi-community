@@ -1,4 +1,4 @@
-package org.mi.biza.msg;
+package org.mi.biz.msg;
 
 import org.mi.common.core.constant.FeignApiPackage;
 import org.springframework.boot.SpringApplication;

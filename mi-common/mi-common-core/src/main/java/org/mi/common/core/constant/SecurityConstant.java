@@ -14,4 +14,6 @@ public interface SecurityConstant {
     String FROM_IN = "Y";
 
     String BEARER_TOKEN_TYPE = "Bearer";
+
+    String VERIFY_CODE_LOGIN = "/verifyCode/login";
 }

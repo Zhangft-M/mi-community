@@ -17,4 +17,8 @@ public interface MiUserConstant {
     String LOGIN_IP = "lastLoginIp";
 
     String LOGIN_TIME = "lastLoginTime";
+
+    String PHONE_NUMBER = "phoneNumber";
+
+    String VERIFY_CODE = "verifyCode";
 }

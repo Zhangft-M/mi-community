@@ -1,19 +1,13 @@
-package org.mi.biza.msg.listener;
+package org.mi.biz.msg.listener;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.mi.api.user.api.MiUserRemoteApi;
-import org.mi.api.user.entity.MiUser;
-import org.mi.common.core.constant.MiUserConstant;
 import org.mi.common.core.constant.SecurityConstant;
 import org.mi.common.core.constant.UserMessageConstant;
-import org.mi.common.core.util.DateUtil;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Map;
 
 /**

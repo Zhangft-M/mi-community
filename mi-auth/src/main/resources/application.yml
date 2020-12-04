@@ -31,7 +31,7 @@ feign:
       enabled: false
 auth:
   social:
-    param:
+    type:
       gitee:
         client-id: 63001e333c6dac343ac5c0e86c244f704ca732b9a7383537d119d9b00724f173
         client-secret: 08751c6b620ccff59513d43aeaa57f996db2f381c133e2f4268bd62378b1cb8e

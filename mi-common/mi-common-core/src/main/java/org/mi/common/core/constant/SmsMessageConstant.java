@@ -8,8 +8,6 @@ package org.mi.common.core.constant;
  **/
 public interface SmsMessageConstant {
 
-    String VERIFY_CODE_PREFIX = "verify:code:";
-
     String VERIFY_CODE_TOPIC = "verify";
 
     String VERIFY_CODE_TAG = "code";

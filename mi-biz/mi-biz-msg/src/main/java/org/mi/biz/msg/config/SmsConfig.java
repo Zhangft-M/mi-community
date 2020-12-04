@@ -1,12 +1,10 @@
-package org.mi.biza.msg.config;
+package org.mi.biz.msg.config;
 
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 /**
  * @program: mi-community

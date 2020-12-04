@@ -1,4 +1,4 @@
-package org.mi.biza.msg.listener;
+package org.mi.biz.msg.listener;
 
 
 import cn.hutool.core.util.RandomUtil;
@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.mi.common.core.constant.RedisCacheConstant;
 import org.mi.common.core.constant.SmsMessageConstant;
 import org.mi.common.core.exception.SmsSendFailException;
 import org.mi.common.core.util.RedisUtils;
@@ -44,7 +45,7 @@ public class SmsListener implements RocketMQListener<String> {
             log.error("短信发送失败,{}",e.getErrMsg());
             throw new SmsSendFailException("短信发送失败");
         }
-        this.redisUtils.set(SmsMessageConstant.VERIFY_CODE_PREFIX + phoneNumber,code);
+        this.redisUtils.set(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber,code);
         System.out.println(phoneNumber);
     }
 }

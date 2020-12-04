@@ -2,7 +2,7 @@ package org.mi.biz.msg.test;
 
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.junit.jupiter.api.Test;
-import org.mi.biza.msg.MiMsgApplication;
+import org.mi.biz.msg.MiMsgApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

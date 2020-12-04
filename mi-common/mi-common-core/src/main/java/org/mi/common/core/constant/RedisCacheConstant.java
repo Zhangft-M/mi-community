@@ -12,4 +12,6 @@ public interface RedisCacheConstant {
 
     String CLIENT_DETAILS_KEY = "mi:oauth:client:";
 
+    String VERIFY_CODE_PREFIX = "verify:code:";
+
 }

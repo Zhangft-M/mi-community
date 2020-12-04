@@ -5,6 +5,7 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
+import org.mi.auth.factory.AuthRequestFactory;
 import org.mi.auth.service.ISocialAuthService;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.springframework.stereotype.Controller;
@@ -26,22 +27,26 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class SocialAuthController {
 
-    /*private final AuthRequest authRequest;
+    private final AuthRequestFactory authRequestFactory;
 
     private final ISocialAuthService socialAuthService;
 
-    @RequestMapping("/render/gitee")
-    public void renderAuth(HttpServletResponse response) throws IOException {
+    @RequestMapping("/render/{type}")
+    public void renderAuth(HttpServletResponse response, @PathVariable String type) throws IOException {
         // String authorize = authRequest.authorize(AuthStateUtils.createState());
         // return authorize;
+        AuthRequest authRequest = this.authRequestFactory.getInstance(type);
         response.sendRedirect(authRequest.authorize(AuthStateUtils.createState()));
     }
 
-    @RequestMapping("/callback/gitee")
-    public AuthUser login(AuthCallback callback) {
+    @RequestMapping("/callback/{type}")
+    public AuthUser login(AuthCallback callback, @PathVariable String type) {
+        AuthRequest authRequest = this.authRequestFactory.getInstance(type);
         AuthUser socialUser = (AuthUser) authRequest.login(callback).getData();
         this.socialAuthService.auth(socialUser);
         return socialUser;
-    }*/
+    }
+
+
 
 }

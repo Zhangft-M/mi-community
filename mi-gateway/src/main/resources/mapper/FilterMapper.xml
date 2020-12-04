@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.mi.gateway.mapper.FilterMapper">
+    <resultMap id="filterMap" type="org.mi.gateway.model.Filter">
+        <id property="filterId" column="filter_id"/>
+        <result property="filterName" column="filter_name"/>
+        <result property="filterVal" column="filter_val"/>
+    </resultMap>
+</mapper>

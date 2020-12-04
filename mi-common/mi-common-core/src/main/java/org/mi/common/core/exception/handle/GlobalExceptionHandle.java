@@ -17,7 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
  * @author: Micah
  * @create: 2020-10-22 16:26
  **/
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "org.mi")
 public class GlobalExceptionHandle {
 
     @ExceptionHandler(BaseException.class)

@@ -108,4 +108,8 @@ public class R<T> extends ResponseEntity<T> {
     public static <T extends BaseException> R<T> ofException(T e){
         return new R<>(e.getStatus());
     }
+
+    public static  R<String> ofException(String message){
+        return new R<String>(message,HttpStatus.BAD_REQUEST);
+    }
 }

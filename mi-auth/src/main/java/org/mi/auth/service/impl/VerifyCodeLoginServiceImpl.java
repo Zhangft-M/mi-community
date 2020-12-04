@@ -41,8 +41,6 @@ public class VerifyCodeLoginServiceImpl implements IVerifyCodeLoginService {
 
     private final OAuth2RequestFactory oAuth2RequestFactory;
 
-    private final HttpServletRequest request;
-
     private final TokenGranter tokenGranter;
 
 
