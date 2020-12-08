@@ -24,6 +24,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @program: mi-community
@@ -67,6 +68,10 @@ public class RouterLoader implements ApplicationEventPublisherAware, Initializin
      */
     private void initRouters() {
         List<Router> routers = this.routerMapper.selectAll();
+        routers.forEach(router -> {
+            Set<Filter> filterSet = router.getFilters().stream().sorted(Comparator.comparingInt(Filter::getSort)).collect(Collectors.toCollection(LinkedHashSet::new));
+            router.setFilters(filterSet);
+        });
         for (Router router : routers) {
             // 判断是否启用该路由
             if (router.getEnable()){

@@ -1,7 +1,5 @@
 server:
   port: 1005
-  servlet:
-    context-path: /mi-community
 spring:
   datasource:
     url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
@@ -17,6 +15,8 @@ spring:
   cloud:
     nacos:
       server-addr: 39.97.76.127
+      discovery:
+        group: MI-GROUP
 aliyun:
   text:
     check:

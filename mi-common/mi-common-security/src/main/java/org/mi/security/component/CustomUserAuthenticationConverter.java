@@ -30,8 +30,8 @@ public class CustomUserAuthenticationConverter extends DefaultUserAuthentication
     @Override
     public Authentication extractAuthentication(Map<String, ?> map) {
         if (CollUtil.isNotEmpty(map)) {
-            String username = (String) map.get(USERNAME);
-            String userId = (String)map.get("userId");
+            String username = map.get(USERNAME).toString();
+            String userId = map.get("userId").toString();
             HashMap<Object, Object> result = Maps.newHashMapWithExpectedSize(2);
             result.put("username",username);
             result.put("userId",userId);

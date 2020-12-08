@@ -16,11 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
@@ -33,6 +33,8 @@ import java.net.URI;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.mi.gateway.util.WebServerUtils.generateNewRequest;
 
 /**
  * @program: mi-community
@@ -87,25 +89,6 @@ public class PhoneVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> 
                 });
             }
         };
-    }
-
-    private ServerHttpRequest generateNewRequest(ServerHttpRequest request, byte[] bytes) {
-        URI ex = UriComponentsBuilder.fromUri(request.getURI()).build(true).toUri();
-        ServerHttpRequest newRequest = request.mutate().uri(ex).build();
-        DataBuffer dataBuffer = stringBuffer(bytes);
-        Flux<DataBuffer> flux = Flux.just(dataBuffer);
-        newRequest = new ServerHttpRequestDecorator(newRequest) {
-            @Override
-            public Flux<DataBuffer> getBody() {
-                return flux;
-            }
-        };
-        return newRequest;
-    }
-
-    private DataBuffer stringBuffer(byte[] bytes) {
-        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        return nettyDataBufferFactory.wrap(bytes);
     }
 
 }

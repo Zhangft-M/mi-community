@@ -51,7 +51,7 @@ public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> impleme
     }
 
     @Override
-    @Cacheable(key = MiUserConstant.USER_INFO_CACHE_KEY + "#p0")
+    // @Cacheable(key = MiUserConstant.USER_INFO_CACHE_KEY + "#p0")
     public MiUserDTO getUserInfo(Long userId) {
         MiUser user = this.getById(userId);
         return Optional.ofNullable(this.miUserMapStruct.toDto(user)).orElseGet(MiUserDTO::new);

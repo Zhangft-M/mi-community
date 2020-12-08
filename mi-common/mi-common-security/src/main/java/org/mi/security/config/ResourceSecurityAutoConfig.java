@@ -18,11 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class ResourceSecurityAutoConfig {
 
     @Bean
-    public ObjectMapper objectMapper(){
-        return new ObjectMapper();
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }

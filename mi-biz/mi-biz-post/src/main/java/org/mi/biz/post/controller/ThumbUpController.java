@@ -15,7 +15,6 @@ import java.util.Set;
  * @author: Micah
  * @create: 2020-11-22 18:11
  **/
-@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/thumbUp")

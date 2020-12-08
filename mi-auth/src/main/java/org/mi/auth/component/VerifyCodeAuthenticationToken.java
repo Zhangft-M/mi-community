@@ -46,7 +46,6 @@ public class VerifyCodeAuthenticationToken extends AbstractAuthenticationToken {
             throw new IllegalArgumentException(
                     "Cannot set this token to trusted - use constructor which takes a GrantedAuthority list instead");
         }
-
         super.setAuthenticated(false);
     }
 

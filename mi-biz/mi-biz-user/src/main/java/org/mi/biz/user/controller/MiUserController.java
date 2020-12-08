@@ -32,13 +32,14 @@ import java.util.Optional;
  **/
 @Slf4j
 @RestController
-@RequestMapping("/miUser")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class MiUserController {
 
     private final IMiUserService miUserService;
 
     private final RocketMQTemplate rocketMQTemplate;
+
 
 
     @Inner
@@ -48,9 +49,9 @@ public class MiUserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("info")
-    public R<MiUserDTO> getUserInfo(){
-        Long userId = SecurityContextHelper.getUserId();
+    @GetMapping("/info/{userId}")
+    public R<MiUserDTO> getUserInfo(@PathVariable Long userId){
+        // Long userId = SecurityContextHelper.getUserId();
         return R.success(this.miUserService.getUserInfo(userId));
     }
 

@@ -28,6 +28,7 @@
             f.id as filter_id,
             f.filter_name,
             f.filter_val,
+            f.sort,
             p.id as predicate_id,
             p.predicate_name,
             p.predicate_val

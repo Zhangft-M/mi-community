@@ -3,6 +3,7 @@ package org.mi.auth;
 import org.mi.common.core.constant.FeignApiPackage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**

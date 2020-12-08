@@ -12,3 +12,21 @@ spring:
       server-addr: 39.97.76.127
       discovery:
         group: MI-GROUP
+  webflux:
+    hiddenmethod:
+      filter:
+        enabled: false
+aliyun:
+  captcha:
+    region-id: cn-hangzhou
+    access-key-id: LTAI4G6dh6WpfJXQXgHGzGi6
+    access-key-secret: XmXumSWCQawqxiXWhEmcVJF3aNil2g
+    app-key: FFFF0N000000000098E9
+web:
+  client:
+    client-id: admin-web
+    client-secret: 123456
+    scope: server
+    password-grant-type: password
+    phone-verify-code-grant-type: verify_code
+    social-grant-type: social_auth

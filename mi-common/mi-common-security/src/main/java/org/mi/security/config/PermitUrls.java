@@ -3,6 +3,7 @@ package org.mi.security.config;
 import cn.hutool.core.util.ReUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.mi.security.annotation.Anonymous;
 import org.mi.security.annotation.Inner;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -58,6 +59,10 @@ public class PermitUrls implements InitializingBean, ApplicationContextAware {
                     urls.add(ReUtil.replaceAll(url, PATTERN, "*"));
                 });
             });
+            Anonymous anonymous = handlerMethod.getMethodAnnotation(Anonymous.class);
+            Optional.ofNullable(anonymous).ifPresent(
+                    anonymous1 -> info.getPatternsCondition().getPatterns().forEach(
+                            url-> urls.add(ReUtil.replaceAll(url, PATTERN, "*"))));
             // 获取类上边的注解, 替代path variable 为 *
             Inner controller = AnnotationUtils.findAnnotation(handlerMethod.getBeanType(), Inner.class);
             Optional.ofNullable(controller).ifPresent(inner1 -> info.getPatternsCondition().getPatterns()

@@ -3,12 +3,15 @@ package org.mi.security.config;
 
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSON;
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mi.common.core.util.FileUtils;
 import org.mi.security.component.CustomUserAuthenticationConverter;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +42,6 @@ public class OauthResourceTokenConfig {
 
     private final ResourceServerProperties resourceServerProperties;
 
-    private final ObjectMapper objectMapper;
-
     private final CustomUserAuthenticationConverter customUserAuthenticationConverter;
 
 
@@ -55,37 +56,11 @@ public class OauthResourceTokenConfig {
         DefaultAccessTokenConverter accessTokenConverter = new DefaultAccessTokenConverter();
         accessTokenConverter.setUserTokenConverter(customUserAuthenticationConverter);
         JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
-        jwtAccessTokenConverter.setVerifierKey(this.getPubKey());
+        String publicKey = FileUtils.readFileContent("public.txt");
+        jwtAccessTokenConverter.setVerifierKey(StringUtils.isBlank(publicKey) ?
+                this.getFromRemoteServer() : publicKey);
         jwtAccessTokenConverter.setAccessTokenConverter(accessTokenConverter);
         return jwtAccessTokenConverter;
-    }
-
-    /**
-     * 从远程服务器获取公钥
-     * @return
-     */
-    private String getPubKey() {
-        String s = "";
-        ClassPathResource classPathResource = new ClassPathResource("public.txt");
-        BufferedReader reader = classPathResource.getReader(StandardCharsets.UTF_8);
-        StringBuilder content = new StringBuilder();
-        try {
-            while (StrUtil.isNotBlank((s = reader.readLine()))){
-                content.append(s);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return StringUtils.isBlank(content.toString()) ?
-                this.getFromRemoteServer() : content.toString();
-        /*return StringUtils.isBlank(resourceServerProperties.getJwt().getKeyValue()) ?
-                this.getFromRemoteServer() : resourceServerProperties.getJwt().getKeyValue();*/
     }
 
     /**
@@ -100,10 +75,10 @@ public class OauthResourceTokenConfig {
                 .getForObject(resourceServerProperties.getJwt().getKeyUri(), String.class, requestEntity);
         // JSONObject body = JSONObject.parseObject(pubKey);
         try {
-            JSONObject body = objectMapper.readValue(pubKey, JSONObject.class);
+            JSON publicKey = JSONUtil.parse(pubKey);
             log.info("Get Key From Authorization Server.");
-            return body.getStr("value");
-        } catch (IOException e) {
+            return publicKey.getByPath("value").toString();
+        } catch (Exception e) {
             log.error("Get public key error: {}", e.getMessage());
         }
         return null;

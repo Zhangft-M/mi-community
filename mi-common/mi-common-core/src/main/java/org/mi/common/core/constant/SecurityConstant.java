@@ -16,4 +16,10 @@ public interface SecurityConstant {
     String BEARER_TOKEN_TYPE = "Bearer";
 
     String VERIFY_CODE_LOGIN = "/verifyCode/login";
+
+    String VERIFY_PATH = "/oauth/login";
+
+    String REGISTER_PATH = "/user/register";
+
+    String VERIFY_DATA = "verifyData";
 }

@@ -24,9 +24,9 @@ public interface MiUserRemoteApi {
      * @param type
      * @return
      */
-    @GetMapping("/mi-user/miUser/{type}")
+    @GetMapping("/user/{type}")
     ResponseEntity<MiUser> loadUserByUsername(@RequestParam(name = "certificate") String certificate, @PathVariable(name = "type") Integer type, @RequestHeader("from") String from);
 
-    @PutMapping("/mi-user/miUser")
-    public R<Void> updateLoginInfo(Map<String,Object> loginInfo, @RequestHeader("from") String from);
+    @PutMapping("/user")
+    R<Void> updateLoginInfo(Map<String,Object> loginInfo, @RequestHeader("from") String from);
 }

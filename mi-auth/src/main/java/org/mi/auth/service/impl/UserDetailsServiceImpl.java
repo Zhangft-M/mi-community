@@ -39,7 +39,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
         Set<String> collect = user.getRoles().stream().map(MiRole::getRoleName).collect(Collectors.toSet());
         List<GrantedAuthority> authorityList = AuthorityUtils.createAuthorityList(collect.toArray(collect.toArray(new String[0])));
-        MiUserInfo miUserInfo = new MiUserInfo(user.getId(), certificate, user.getPassword(), !user.getHasDelete(), true, true, !user.getStatus(), authorityList);
+        MiUserInfo miUserInfo = new MiUserInfo(user.getId(), certificate, user.getPassword(), !user.getHasDelete(), true, true, user.getStatus(), authorityList);
         /*SimpleGrantedAuthority admin = new SimpleGrantedAuthority("admin");
         List<GrantedAuthority> list = new ArrayList<>();
         list.add(admin);

@@ -8,6 +8,7 @@ import org.mi.api.post.vo.PostVO;
 import org.mi.biz.post.service.IPostService;
 import org.mi.common.core.result.PageResult;
 import org.mi.common.core.result.R;
+import org.mi.security.annotation.Anonymous;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,23 +24,25 @@ import java.util.Set;
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
-@CrossOrigin
 public class PostController {
 
     private final IPostService postService;
 
+    @Anonymous
     @GetMapping
     public R<PageResult> list(PostQueryCriteria criteria, Pageable pageParam){
         PageResult result = this.postService.list(criteria,pageParam);
         return R.success(result);
     }
 
+    @Anonymous
     @GetMapping("{id}")
     public R<EsPost> getById(@PathVariable() Long id){
         EsPost result = this.postService.getDataById(id);
         return R.success(result);
     }
 
+    @Anonymous
     @GetMapping("recommend")
     public R<List<PostVO>> listRecommend(){
         List<PostVO> result = this.postService.listRecommend();

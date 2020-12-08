@@ -5,6 +5,7 @@ import org.mi.api.post.entity.Comment;
 import org.mi.api.post.vo.CommentTree;
 import org.mi.biz.post.service.ICommentService;
 import org.mi.common.core.result.R;
+import org.mi.security.annotation.Anonymous;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,6 @@ import java.util.List;
  * @author: Micah
  * @create: 2020-11-19 17:00
  **/
-@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/comment")
@@ -23,6 +23,7 @@ public class CommentController {
 
     private final ICommentService commentService;
 
+    @Anonymous
     @GetMapping("{postId}")
     public R<List<CommentTree>> list(@PathVariable Long postId){
         List<CommentTree> commentTree = this.commentService.list(postId);

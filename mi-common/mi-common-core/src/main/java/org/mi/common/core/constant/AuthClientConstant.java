@@ -28,4 +28,12 @@ public interface AuthClientConstant {
      * 默认的查询语句,按照id排序
      */
     String DEFAULT_FIND_STATEMENT = BASE_FIND_STATEMENT + " order by client_id";
+
+    String CLIENT_ID = "client_id";
+
+    String CLIENT_SECRET = "client_secret";
+
+    String GRANT_TYPE = "grant_type";
+
+    String SCOPE = "scope";
 }

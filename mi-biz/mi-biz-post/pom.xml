@@ -15,12 +15,6 @@
     <dependencies>
         <dependency>
             <groupId>com.mi</groupId>
-            <artifactId>mi-common-core</artifactId>
-            <exclusions>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.mi</groupId>
             <artifactId>mi-api-post</artifactId>
             <exclusions>
                 <exclusion>

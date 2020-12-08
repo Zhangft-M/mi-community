@@ -12,7 +12,9 @@ public interface MiUserConstant {
 
     String USER_ID = "userId";
 
-    String USER_NAME = "userName";
+    String USER_NAME = "username";
+
+    String PASSWORD = "password";
 
     String LOGIN_IP = "lastLoginIp";
 

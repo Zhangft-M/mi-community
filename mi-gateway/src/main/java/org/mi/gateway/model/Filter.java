@@ -23,4 +23,6 @@ public class Filter implements Serializable {
     private String filterName;
 
     private String filterVal;
+
+    private Integer sort;
 }

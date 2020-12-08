@@ -51,7 +51,7 @@ public class VerifyCodeTokenGranter extends AbstractTokenGranter {
         Set<String> collect = miUser.getRoles().stream().map(MiRole::getRoleName).collect(Collectors.toSet());
         List<GrantedAuthority> authorityList = AuthorityUtils.createAuthorityList(collect.toArray(collect.toArray(new String[0])));
         MiUserInfo userInfo = new MiUserInfo(miUser.getId(),miUser.getUsername(),"N/A",
-                !miUser.getHasDelete(),true,true,!miUser.getStatus(), authorityList);
+                !miUser.getHasDelete(),true,true,miUser.getStatus(), authorityList);
         OAuth2Request storedOAuth2Request = getRequestFactory().createOAuth2Request(client, tokenRequest);
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userInfo,"N/A",authorityList);
         return new OAuth2Authentication(storedOAuth2Request, authenticationToken);
