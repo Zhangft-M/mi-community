@@ -1,0 +1,23 @@
+server:
+  port: 1004
+spring:
+  application:
+    name: MI-MSG-SERVER
+  cloud:
+    alicloud:
+      access-key: LTAI4G6dh6WpfJXQXgHGzGi6
+      secret-key: XmXumSWCQawqxiXWhEmcVJF3aNil2g
+    nacos:
+      server-addr: 39.97.76.127
+      discovery:
+        group: MI-GROUP
+  redis:
+    host: 8.129.40.60
+sms:
+  config:
+    sign-name: 玖玖
+    template-code: SMS_184620533
+
+rocketmq:
+  name-server: 8.129.40.60:9876
+

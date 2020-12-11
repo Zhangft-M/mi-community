@@ -30,7 +30,7 @@ public class JsonSentinelGatewayBlockExceptionHandler implements WebExceptionHan
         }
         ServerHttpResponse serverHttpResponse = exchange.getResponse();
         serverHttpResponse.getHeaders().add("Content-Type", "application/json;charset=UTF-8");
-        byte[] datas = "{\"code\":403,\"msg\":\"访问过于频繁,请稍后再访问\"}".getBytes(StandardCharsets.UTF_8);
+        byte[] datas = "{\"code\":403,\"tool\":\"访问过于频繁,请稍后再访问\"}".getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = serverHttpResponse.bufferFactory().wrap(datas);
         return serverHttpResponse.writeWith(Mono.just(buffer));
     }

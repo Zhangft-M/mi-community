@@ -2,6 +2,7 @@ package org.mi.security.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.mi.common.core.exception.util.AssertUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -25,7 +26,9 @@ public class SecurityContextHelper {
         Class<?> clazz = authentication.getPrincipal().getClass();
         try {
             Method getUserId = clazz.getMethod("getUserId", Long.TYPE);
-            return (Long) getUserId.invoke(authentication.getPrincipal(), null);
+            Long userId = (Long) getUserId.invoke(authentication.getPrincipal(), null);
+            AssertUtil.idIsNotNull(userId);
+            return userId;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.error("没有获取到用户相关的信息");
         }

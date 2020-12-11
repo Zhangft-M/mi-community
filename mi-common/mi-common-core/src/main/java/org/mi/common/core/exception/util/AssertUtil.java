@@ -2,15 +2,19 @@ package org.mi.common.core.exception.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.mi.common.core.exception.ContentNotSaveException;
 import org.mi.common.core.exception.IllegalParameterException;
+import org.mi.common.core.util.FileUtils;
 import org.mi.common.core.util.PhoneUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -57,6 +61,12 @@ public class AssertUtil {
         }
     }
 
+    public static void idsIsNull(Long... ids) {
+        for (Long id : ids) {
+            idIsNull(id);
+        }
+    }
+
     public static void idIsNotNull(Long id) {
         if (Objects.isNull(id)) {
             throw new IllegalParameterException(400, "没有id");
@@ -77,7 +87,22 @@ public class AssertUtil {
         } catch (Exception e) {
             throw new IllegalParameterException("手机号格式不正确,仅支持大陆和香港手机号");
         }
+    }
 
+    public static void isAvatarPic(MultipartFile multipartFile){
+        String originalFilename = multipartFile.getOriginalFilename();
+        assert originalFilename != null;
+        if (!originalFilename.endsWith(".jpg")){
+            throw new IllegalParameterException("图片只支持jpg格式");
+        }
+        if (!FileUtils.checkSize(1, multipartFile.getSize())){
+            throw new IllegalParameterException("图片最大为1MB");
+        }
+    }
 
+    public static void statusIsTrue(Boolean status,String msg){
+        if (!status){
+            throw new ContentNotSaveException(msg);
+        }
     }
 }

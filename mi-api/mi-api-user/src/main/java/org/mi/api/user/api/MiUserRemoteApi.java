@@ -27,6 +27,20 @@ public interface MiUserRemoteApi {
     @GetMapping("/user/{type}")
     ResponseEntity<MiUser> loadUserByUsername(@RequestParam(name = "certificate") String certificate, @PathVariable(name = "type") Integer type, @RequestHeader("from") String from);
 
+    /**
+     * 更新登录信息
+     * @param loginInfo
+     * @param from
+     * @return
+     */
     @PutMapping("/user")
     R<Void> updateLoginInfo(Map<String,Object> loginInfo, @RequestHeader("from") String from);
+
+    /**
+     * 更新用户信息
+     * @param user
+     * @return
+     */
+    @PutMapping("/user/update")
+    R<Void> updateUserInfo(@RequestBody MiUser user);
 }

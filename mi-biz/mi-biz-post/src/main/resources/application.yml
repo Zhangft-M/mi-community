@@ -17,11 +17,6 @@ spring:
       server-addr: 39.97.76.127
       discovery:
         group: MI-GROUP
-aliyun:
-  text:
-    check:
-      access-key-id: LTAI4FnpwWr4jtHc1xzpVqTo
-      access-key-secret: JXijt4li96FfBm6I1Vrfij859lI7az
 logging:
   file:
     name: mi-post

@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.mi.api.post.entity.Comment;
 import org.mi.api.post.vo.CommentTree;
 import org.mi.biz.post.service.ICommentService;
+import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
 import org.mi.security.annotation.Anonymous;
+import org.mi.security.util.SecurityContextHelper;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +34,9 @@ public class CommentController {
 
     @PostMapping
     public R<CommentTree> insertComment(@RequestBody Comment comment){
+        AssertUtil.idsIsNull(comment.getId(),comment.getUserId());
+        Long userId = SecurityContextHelper.getUserId();
+        comment.setUserId(userId);
         CommentTree commentTree = this.commentService.insertComment(comment);
         return R.success(commentTree);
     }

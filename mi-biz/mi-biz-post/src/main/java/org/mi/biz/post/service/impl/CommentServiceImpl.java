@@ -10,11 +10,11 @@ import org.mi.api.post.entity.Comment;
 import org.mi.api.post.entity.EsComment;
 import org.mi.api.post.mapstruct.EsCommentMapStruct;
 import org.mi.api.post.vo.CommentTree;
+import org.mi.api.tool.api.ContentCheckRemoteApi;
+import org.mi.api.tool.entity.Checker;
 import org.mi.biz.post.mapper.CommentMapper;
 import org.mi.biz.post.service.ICommentService;
-import org.mi.biz.post.util.ContentVerifyHelper;
 import org.mi.common.core.constant.ThumbUpConstant;
-import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.util.RedisUtils;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
@@ -40,7 +40,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper,Comment> imple
 
     private final ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-    private final ContentVerifyHelper contentVerifyHelper;
+    private final ContentCheckRemoteApi contentCheckRemoteApi;
 
     private final RedisUtils redisUtils;
 
@@ -79,10 +79,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper,Comment> imple
     @Override
     public CommentTree insertComment(Comment comment) {
         String content = comment.getContent();
-        this.contentVerifyHelper.checkContent(comment,content);
-        // 待审核或者已经审核通过的
-        boolean insert = comment.insert();
-        if (insert && comment.getStatus()){
+        Checker checker = this.contentCheckRemoteApi.checkTxt(content).getData();
+        AssertUtil.statusIsTrue(checker.getStatus(),"内容涉嫌违规");
+        if (comment.insert()){
             // 审核通过的，直接从索引库查找并返回数据
             EsComment esComment = this.elasticsearchRestTemplate.get(String.valueOf(comment.getId()), EsComment.class);
             return Optional.ofNullable(this.commentMapStruct.toDto(esComment)).orElseGet(CommentTree::new);

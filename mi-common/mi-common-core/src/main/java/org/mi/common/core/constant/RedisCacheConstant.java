@@ -14,4 +14,6 @@ public interface RedisCacheConstant {
 
     String VERIFY_CODE_PREFIX = "verify:code:";
 
+    String USER_POST_FAVORITES = "user:favorites:";
+
 }

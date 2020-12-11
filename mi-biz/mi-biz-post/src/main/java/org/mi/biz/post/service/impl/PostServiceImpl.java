@@ -1,14 +1,9 @@
 package org.mi.biz.post.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
-import com.aliyuncs.IAcsClient;
-import com.aliyuncs.green.model.v20180509.TextScanRequest;
-import com.aliyuncs.http.FormatType;
-import com.aliyuncs.http.HttpResponse;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -18,20 +13,25 @@ import org.common.mp.util.QueryUtils;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.*;
+import org.mi.api.post.dto.EsPostDTO;
 import org.mi.api.post.entity.EsPost;
 import org.mi.api.post.entity.Post;
+import org.mi.api.post.mapstruct.EsPostMapStruct;
 import org.mi.api.post.query.PostQueryCriteria;
 import org.mi.api.post.vo.PostVO;
+import org.mi.api.tool.api.ContentCheckRemoteApi;
+import org.mi.api.tool.entity.Checker;
 import org.mi.biz.post.mapper.PostMapper;
+import org.mi.biz.post.service.IFavoritesPostService;
 import org.mi.biz.post.service.IPostService;
-import org.mi.biz.post.util.ContentVerifyHelper;
-import org.mi.common.core.constant.ContentCheckConstant;
+import org.mi.common.core.constant.MiUserConstant;
 import org.mi.common.core.constant.ThumbUpConstant;
-import org.mi.common.core.exception.ContentNotSaveException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.PageResult;
 import org.mi.common.core.util.RedisUtils;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -57,9 +57,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IPostService {
 
-    private final IAcsClient acsClient;
+    private final EsPostMapStruct postMapStruct;
 
-    private final ContentVerifyHelper contentVerifyHelper;
+    private final IFavoritesPostService favoritesPostService;
+
+    private final ContentCheckRemoteApi contentCheckRemoteApi;
 
     private final RedisUtils redisUtils;
 
@@ -75,12 +77,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         AssertUtil.notNull(one);
         // 查询缓存，记录是否有点赞记录
         Integer count = (Integer) this.redisUtils.get(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
-        if (!Objects.isNull(count)){
+        if (!Objects.isNull(count)) {
             // 更新数据
             one.getContent().setVoteUp(count);
-        }else {
+        } else {
             // 保存一份缓存
-            this.redisUtils.set(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id,one.getContent().getVoteUp());
+            this.redisUtils.set(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id, one.getContent().getVoteUp());
         }
         return one.getContent();
     }
@@ -216,9 +218,10 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void savePost(Post postEntity) {
-        AssertUtil.idIsNull(postEntity.getId());
         // 对内容进行校验
-        this.contentVerifyHelper.checkContent(postEntity, postEntity.getTitle() + postEntity.getContent());
+        Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent()).getData();
+        AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
+        // 检验通过
         // TODO: 2020/11/8 通过用户的id来查询用户拥有的积分
         // .....
         // TODO: 2020/11/8 方案一：先添加，然后再扣除积分，如果积分足够，则成功，积分不够直接抛出异常
@@ -228,16 +231,21 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
             // TODO: 2020/11/8 访问用户微服务，查询用户以及相关积分信息
 
         }
+
     }
 
     @Override
     public void updatePost(Post postEntity) {
-        AssertUtil.idIsNotNull(postEntity.getId());
         // 通过用户的id和帖子的id来查询数据，确保传递过来额参数的正确性
-        this.contentVerifyHelper.checkContent(postEntity, postEntity.getTitle() + postEntity.getContent());
-        if (postEntity.updateById()) {
-            // TODO: 2020/11/8 访问用户微服务，查询用户以及相关积分信息
-        }
+        Post post = postEntity.selectOne(Wrappers.<Post>lambdaQuery()
+                .eq(Post::getId, postEntity.getId())
+                .eq(Post::getUserId, postEntity.getUserId()));
+        AssertUtil.notNull(post);
+        Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent()).getData();
+        AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
+        postEntity.updateById();
+
+
     }
 
     @Override
@@ -247,4 +255,39 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         // TODO: 2020/11/8 通过用户的id查询用户发的帖子
     }
 
+    @Override
+    public List<EsPostDTO> listByUserId(Long userId) {
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.must(QueryBuilders.termsQuery(MiUserConstant.USER_ID, userId));
+        this.filterJunkData(boolQueryBuilder);
+        NativeSearchQuery query = queryBuilder
+                .withQuery(boolQueryBuilder)
+                .withPageable(PageRequest.of(0, 10, Sort.Direction.DESC, "create_time")).build();
+        SearchHits<EsPost> searchHits = this.elasticsearchRestTemplate.search(query, EsPost.class);
+        List<EsPost> esPostList = searchHits.getSearchHits().stream().map(SearchHit::getContent).collect(Collectors.toList());
+        return this.postMapStruct.toDto(esPostList);
+    }
+
+    @Override
+    public List<EsPostDTO> listUserFavorites(Long userId) {
+        Set<Long> results = this.favoritesPostService.listFavoritesPostId(userId);
+        if (CollUtil.isEmpty(results)) {
+            return Collections.emptyList();
+        }
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.must(QueryBuilders.termsQuery("post_id", results));
+        this.filterJunkData(boolQueryBuilder);
+        NativeSearchQuery query = queryBuilder
+                .withQuery(boolQueryBuilder)
+                .withPageable(PageRequest.of(0, 10, Sort.Direction.DESC, "create_time"))
+                .build();
+        SearchHits<EsPost> searchHits = this.elasticsearchRestTemplate.search(query, EsPost.class);
+        if (!searchHits.hasSearchHits()) {
+            return Collections.emptyList();
+        }
+        List<EsPost> postList = searchHits.getSearchHits().stream().map(SearchHit::getContent).collect(Collectors.toList());
+        return this.postMapStruct.toDto(postList);
+    }
 }

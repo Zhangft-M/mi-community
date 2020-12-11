@@ -19,4 +19,8 @@ public class ContentNotSaveException extends BaseException {
     public ContentNotSaveException(Integer code, String message) {
         super(code, message);
     }
+
+    public ContentNotSaveException(String message) {
+        super(400, message);
+    }
 }

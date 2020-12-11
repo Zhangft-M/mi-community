@@ -51,7 +51,6 @@ public class MiUserController {
 
     @GetMapping("/info/{userId}")
     public R<MiUserDTO> getUserInfo(@PathVariable Long userId){
-        // Long userId = SecurityContextHelper.getUserId();
         return R.success(this.miUserService.getUserInfo(userId));
     }
 
@@ -69,6 +68,17 @@ public class MiUserController {
         miUser.setId(Long.valueOf(loginInfo.get(MiUserConstant.USER_ID).toString()));
         AssertUtil.notNull(miUser.getId(),miUser.getLastLoginIp(),miUser.getLastLoginTime());
         if (miUser.updateById()) {
+            return R.success();
+        }
+        return R.fail();
+    }
+
+    @PutMapping("update")
+    public R<Void> updateUserInfo(@RequestBody MiUser user){
+        AssertUtil.idIsNull(user.getId());
+        Long userId = SecurityContextHelper.getUserId();
+        user.setId(userId);
+        if (user.updateById()) {
             return R.success();
         }
         return R.fail();

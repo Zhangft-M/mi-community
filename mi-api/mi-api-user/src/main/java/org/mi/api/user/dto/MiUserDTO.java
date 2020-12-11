@@ -18,16 +18,16 @@ public class MiUserDTO implements Serializable {
 
     private Long id;
 
-    private String username;
-
     private String phone;
 
     @Email
     private String email;
 
-    private String avatar;
+    private String nickName;
 
-    private Boolean status;
+    private String backgroundImage;
+
+    private String avatar;
 
     private String sign;
 
@@ -36,7 +36,6 @@ public class MiUserDTO implements Serializable {
     private Integer gender;
 
     private Integer postCount;
-
 
     public String getGenderName() {
         return gender == 1 ? "男":"女";

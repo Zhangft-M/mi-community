@@ -16,7 +16,7 @@
     <modules>
         <module>mi-biz-user</module>
         <module>mi-biz-post</module>
-        <module>mi-biz-msg</module>
+        <module>mi-biz-tool</module>
     </modules>
 
     <dependencies>

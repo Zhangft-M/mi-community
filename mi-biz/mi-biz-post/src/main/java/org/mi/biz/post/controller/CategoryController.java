@@ -5,7 +5,6 @@ import org.mi.api.post.dto.CategoryDTO;
 import org.mi.biz.post.service.ICategoryService;
 import org.mi.common.core.result.R;
 import org.mi.security.annotation.Anonymous;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

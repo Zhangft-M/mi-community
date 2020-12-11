@@ -1,6 +1,7 @@
 package org.mi.biz.post.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.mi.api.post.dto.EsPostDTO;
 import org.mi.api.post.entity.EsPost;
 import org.mi.api.post.entity.Post;
 import org.mi.api.post.query.PostQueryCriteria;
@@ -51,4 +52,18 @@ public interface IPostService extends IService<Post> {
     List<PostVO> listRecommend();
 
     EsPost getDataById(Long id);
+
+    /**
+     * 根据用户id查找用户最近发的十条记录
+     * @param userId
+     * @return
+     */
+    List<EsPostDTO> listByUserId(Long userId);
+
+    /**
+     * 查找用户收藏的
+     * @param userId
+     * @return
+     */
+    List<EsPostDTO> listUserFavorites(Long userId);
 }

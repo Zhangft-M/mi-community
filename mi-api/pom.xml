@@ -14,6 +14,7 @@
     <modules>
         <module>mi-api-post</module>
         <module>mi-api-user</module>
+        <module>mi-api-tool</module>
     </modules>
 
 

@@ -28,4 +28,9 @@ public class MiUserRemoteApiFallback implements MiUserRemoteApi {
     public R<Void> updateLoginInfo(Map<String,Object> loginInfo, String from) {
         return null;
     }
+
+    @Override
+    public R<Void> updateUserInfo(MiUser user) {
+        return null;
+    }
 }
