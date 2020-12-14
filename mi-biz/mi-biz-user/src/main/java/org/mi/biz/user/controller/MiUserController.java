@@ -3,22 +3,17 @@ package org.mi.biz.user.controller;
 import cn.hutool.core.bean.BeanUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.mi.api.user.dto.MiUserDTO;
 import org.mi.api.user.entity.MiUser;
-import org.mi.api.user.mapstruct.MiUserMapStruct;
 import org.mi.biz.user.service.IMiUserService;
 import org.mi.common.core.constant.MiUserConstant;
-import org.mi.common.core.constant.SmsMessageConstant;
-import org.mi.common.core.exception.SmsSendFailException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
+import org.mi.security.annotation.Anonymous;
 import org.mi.security.annotation.Inner;
 import org.mi.security.util.SecurityContextHelper;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -54,6 +49,7 @@ public class MiUserController {
         return R.success(this.miUserService.getUserInfo(userId));
     }
 
+    @Anonymous
     @PostMapping
     public R<Void> register(@RequestBody MiUser miUser){
         AssertUtil.idIsNotNull(miUser.getId());
@@ -84,13 +80,27 @@ public class MiUserController {
         return R.fail();
     }
 
-    @GetMapping("sendSms")
-    public R<Void> senSms(String phone){
-        AssertUtil.isPhoneNumber(phone);
-        SendResult sendResult = this.rocketMQTemplate.syncSend(SmsMessageConstant.VERIFY_CODE_TOPIC + ":" + SmsMessageConstant.VERIFY_CODE_TAG, phone);
-        if (!sendResult.getSendStatus().equals(SendStatus.SEND_OK)){
-            throw new SmsSendFailException("系统错误消息发送失败,请稍后重试");
-        }
+    /**
+     * 更新用户的积分
+     * @param oldPoint/
+     * @param newPoint/
+     * @return
+     */
+    @PutMapping("point")
+    public R<Void> updateUserPoint(Integer oldPoint,Integer newPoint){
+        Long userId = SecurityContextHelper.getUserId();
+        this.miUserService.updateUserPoint(oldPoint,newPoint,userId);
         return R.success();
     }
+
+    @PutMapping("changePassword")
+    public R<Void> changePassword(String newPassword){
+        AssertUtil.notBlank(newPassword);
+        Long userId = SecurityContextHelper.getUserId();
+        this.miUserService.changePassword(newPassword,userId);
+        return R.success();
+    }
+
+
+
 }

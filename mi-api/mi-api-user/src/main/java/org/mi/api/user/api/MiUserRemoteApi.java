@@ -1,6 +1,5 @@
 package org.mi.api.user.api;
 
-import com.baomidou.mybatisplus.extension.api.R;
 import org.mi.api.user.api.fallback.MiUserRemoteApiFallback;
 import org.mi.api.user.dto.MiUserDTO;
 import org.mi.api.user.entity.MiUser;
@@ -34,7 +33,7 @@ public interface MiUserRemoteApi {
      * @return
      */
     @PutMapping("/user")
-    R<Void> updateLoginInfo(Map<String,Object> loginInfo, @RequestHeader("from") String from);
+    void updateLoginInfo(Map<String,Object> loginInfo, @RequestHeader("from") String from);
 
     /**
      * 更新用户信息
@@ -42,5 +41,20 @@ public interface MiUserRemoteApi {
      * @return
      */
     @PutMapping("/user/update")
-    R<Void> updateUserInfo(@RequestBody MiUser user);
+    void updateUserInfo(@RequestBody MiUser user);
+
+    /**
+     * 更新用户的积分
+     * @param oldPoint/
+     * @param newPoint/
+     * @return
+     */
+    void updateUserPoint(Integer oldPoint,Integer newPoint);
+
+    /**
+     * 根据用户的id查询用户信息
+     * @param userId
+     * @return
+     */
+    MiUserDTO selectById(Long userId);
 }

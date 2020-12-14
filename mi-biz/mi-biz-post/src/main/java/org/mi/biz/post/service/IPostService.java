@@ -42,8 +42,9 @@ public interface IPostService extends IService<Post> {
     /**
      * 批量删除
      * @param ids
+     * @param userId
      */
-    void deletePost(Set<Long> ids);
+    void deletePost(Set<Long> ids, Long userId);
 
     /**
      * 查询推荐的数据

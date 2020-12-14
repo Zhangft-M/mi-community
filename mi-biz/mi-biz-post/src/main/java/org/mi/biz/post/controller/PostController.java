@@ -75,7 +75,8 @@ public class PostController {
 
     @DeleteMapping
     public R<Void> delete(Set<Long> ids){
-        this.postService.deletePost(ids);
+        Long userId = SecurityContextHelper.getUserId();
+        this.postService.deletePost(ids,userId);
         return R.success();
     }
 

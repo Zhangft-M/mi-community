@@ -40,7 +40,7 @@ public @interface Query {
     // SortType sort() default SortType.ASC;
 
     /**
-     * 多字段模糊搜索，仅支持String类型字段，多个用逗号隔开, 如@Query(blurry = "email,username")
+     * 多字段模糊搜索，仅支持String类型字段，多个用逗号隔开, 如@Query(blurry = "templates,username")
      */
     String[] blurry() default {};
 

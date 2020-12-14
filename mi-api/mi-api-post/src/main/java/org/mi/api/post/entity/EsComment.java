@@ -51,6 +51,8 @@ public class EsComment implements Serializable {
 
     private Boolean status;
 
+    private Boolean receiveReply;
+
     @Field(value = "has_delete")
     private Boolean hasDelete;
 

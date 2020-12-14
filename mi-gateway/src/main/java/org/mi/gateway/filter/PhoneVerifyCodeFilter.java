@@ -60,7 +60,9 @@ public class PhoneVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> 
                 ServerHttpRequest request = exchange.getRequest();
                 String path = request.getURI().getPath();
                 if (!StrUtil.containsIgnoreCase(path, SecurityConstant.VERIFY_CODE_LOGIN)) {
-                    return chain.filter(exchange);
+                    if (!StrUtil.containsIgnoreCase(path,SecurityConstant.REGISTER_PATH)){
+                        return chain.filter(exchange);
+                    }
                 }
                 if (!HttpMethod.POST.equals(request.getMethod())){
                     return Mono.error(new IllegalRequestException("请求方法不正确"));
@@ -81,10 +83,10 @@ public class PhoneVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> 
                     String verifyCode = (String) param.getByPath(MiUserConstant.VERIFY_CODE);
                     AssertUtil.notBlank(phoneNumber,verifyCode);
                     String cacheVerifyCode = (String) redisUtils.get(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
+                    redisUtils.del(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
                     if (!StrUtil.equals(cacheVerifyCode,verifyCode)){
                         return Mono.error(new IllegalParameterException("验证码错误"));
                     }
-                    redisUtils.del(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
                     return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
                 });
             }

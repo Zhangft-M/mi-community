@@ -48,6 +48,8 @@ public class Post extends BaseEntity<Post> {
 
     private Boolean recommend;
 
+    private Boolean receiveReply;
+
     private Long viewCount;
 
     private Integer commentCount;
@@ -66,7 +68,10 @@ public class Post extends BaseEntity<Post> {
      */
     private Boolean ending;
 
-    private Integer reward;
+    /**
+     * 用户拥有的积分
+     */
+    private Integer point;
 
 
 }

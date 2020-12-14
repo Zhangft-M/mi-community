@@ -29,6 +29,8 @@ import java.util.Objects;
 @UtilityClass
 public class AssertUtil {
 
+    private static final String EMAIL_FORMAT = "\\p{Alpha}\\w{2,15}[@][a-z0-9]{3,}[.]\\p{Lower}{2,}";
+
     public static void notNull(Object... o) {
         for (Object o1 : o) {
             notNull(o1, "参数为空不符合要求");
@@ -80,6 +82,7 @@ public class AssertUtil {
     }
 
     public static <T> void isPhoneNumber(String phoneNumber) {
+        AssertUtil.notBlank(phoneNumber);
         try {
             if (PhoneUtils.isPhoneLegal(phoneNumber)) {
                 throw new IllegalParameterException("手机号格式不正确,仅支持大陆和香港手机号");
@@ -103,6 +106,12 @@ public class AssertUtil {
     public static void statusIsTrue(Boolean status,String msg){
         if (!status){
             throw new ContentNotSaveException(msg);
+        }
+    }
+
+    public static void isEmail(String email){
+        if (!email.matches(EMAIL_FORMAT)){
+            throw new IllegalParameterException("邮箱格式不正确");
         }
     }
 }

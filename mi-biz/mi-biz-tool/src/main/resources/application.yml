@@ -13,6 +13,11 @@ spring:
         group: MI-GROUP
   redis:
     host: 8.129.40.60
+  mail:
+    host:
+    password:
+    port:
+    username:
 sms:
   config:
     sign-name: 玖玖

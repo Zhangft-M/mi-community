@@ -10,4 +10,5 @@ public interface UserMessageConstant {
     String SAVE_LOGIN_INFO_TOPIC = "userInfo";
 
     String SAVE_LOGIN_INFO_TAG = "save";
+
 }

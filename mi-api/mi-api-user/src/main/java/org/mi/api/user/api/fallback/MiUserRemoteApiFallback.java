@@ -3,6 +3,7 @@ package org.mi.api.user.api.fallback;
 import com.baomidou.mybatisplus.extension.api.R;
 import lombok.extern.slf4j.Slf4j;
 import org.mi.api.user.api.MiUserRemoteApi;
+import org.mi.api.user.dto.MiUserDTO;
 import org.mi.api.user.entity.MiUser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -25,12 +26,20 @@ public class MiUserRemoteApiFallback implements MiUserRemoteApi {
     }
 
     @Override
-    public R<Void> updateLoginInfo(Map<String,Object> loginInfo, String from) {
-        return null;
+    public void updateLoginInfo(Map<String,Object> loginInfo, String from) {
+
     }
 
     @Override
-    public R<Void> updateUserInfo(MiUser user) {
+    public void updateUserInfo(MiUser user) {
+    }
+
+    @Override
+    public void updateUserPoint(Integer oldPoint,Integer newPoint) {
+    }
+
+    @Override
+    public MiUserDTO selectById(Long userId) {
         return null;
     }
 }

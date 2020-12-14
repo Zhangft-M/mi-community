@@ -15,6 +15,8 @@ import org.mi.common.core.exception.SmsSendFailException;
 import org.mi.common.core.util.RedisUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @program: mi-community
  * @description:
@@ -45,7 +47,7 @@ public class SmsListener implements RocketMQListener<String> {
             log.error("短信发送失败,{}",e.getErrMsg());
             throw new SmsSendFailException("短信发送失败");
         }
-        this.redisUtils.set(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber,code);
+        this.redisUtils.set(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber,code,5, TimeUnit.MINUTES);
         System.out.println(phoneNumber);
     }
 }

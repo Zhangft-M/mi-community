@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @program: mi-community
@@ -74,5 +75,31 @@ public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> impleme
             miUserRole.setUserId(miUser.getId());
             miUserRole.insert();
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUserPoint(Integer oldPoint, Integer newPoint, Long userId) {
+        MiUser user = this.miUserMapper.selectById(userId);
+        AtomicInteger atomicInteger = new AtomicInteger();
+        atomicInteger.set(user.getPoint() + oldPoint);
+        if (atomicInteger.get() < newPoint){
+           throw new IllegalParameterException("积分不足");
+        }
+        // 进行更新操作
+        user.setPoint(atomicInteger.get() - newPoint);
+        user.updateById();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(String newPassword, Long userId) {
+        MiUser miUser = this.miUserMapper.selectById(userId);
+        boolean matches = this.passwordEncoder.matches(newPassword, miUser.getPassword());
+        if (matches){
+            throw new IllegalParameterException("与原来密码相同");
+        }
+        miUser.setPassword(this.passwordEncoder.encode(newPassword));
+        miUser.updateById();
     }
 }

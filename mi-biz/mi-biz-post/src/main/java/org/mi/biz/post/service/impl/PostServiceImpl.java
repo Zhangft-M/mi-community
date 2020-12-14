@@ -6,7 +6,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.common.mp.annotation.Query;
 import org.common.mp.util.QueryUtils;
@@ -21,6 +20,7 @@ import org.mi.api.post.query.PostQueryCriteria;
 import org.mi.api.post.vo.PostVO;
 import org.mi.api.tool.api.ContentCheckRemoteApi;
 import org.mi.api.tool.entity.Checker;
+import org.mi.api.user.api.MiUserRemoteApi;
 import org.mi.biz.post.mapper.PostMapper;
 import org.mi.biz.post.service.IFavoritesPostService;
 import org.mi.biz.post.service.IPostService;
@@ -37,12 +37,10 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +61,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     private final ContentCheckRemoteApi contentCheckRemoteApi;
 
+    private final MiUserRemoteApi userRemoteApi;
+
     private final RedisUtils redisUtils;
 
     private final ElasticsearchRestTemplate elasticsearchRestTemplate;
@@ -75,7 +75,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         SearchHit<EsPost> one = this.elasticsearchRestTemplate.searchOne(builder.withQuery(QueryBuilders.termQuery("_id", id)).build(), EsPost.class);
         AssertUtil.notNull(one);
-        // 查询缓存，记录是否有点赞记录
+        // 查询缓存，记录是否有点赞记录,当进行点赞操作的时候直接操作缓存,将数据的点赞数加一
         Integer count = (Integer) this.redisUtils.get(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
         if (!Objects.isNull(count)) {
             // 更新数据
@@ -225,34 +225,44 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         // TODO: 2020/11/8 通过用户的id来查询用户拥有的积分
         // .....
         // TODO: 2020/11/8 方案一：先添加，然后再扣除积分，如果积分足够，则成功，积分不够直接抛出异常
-        // TODO: 2020/11/8 方案二，一步一步来
+        // TODO: 2020/12/13 方案二:先查询用户的积分,如果积分足够，扣除积分，添加数据,积分不足够直接抛出异常
+        // 方案一不需要解决分布式事务问题,如果扣除积分失败直接抛出异常,这边捕获异常回滚事务
+        // 方案二需要解决分布式事务问题,扣除积分成功后，如果插入post数据失败,则双方都需要回滚.
         // TODO: 2020/11/8 采用方案一
+        // 先开启事务添加数据
         if (postEntity.insert()) {
-            // TODO: 2020/11/8 访问用户微服务，查询用户以及相关积分信息
-
+            this.userRemoteApi.updateUserPoint(0,postEntity.getPoint());
         }
-
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updatePost(Post postEntity) {
         // 通过用户的id和帖子的id来查询数据，确保传递过来额参数的正确性
-        Post post = postEntity.selectOne(Wrappers.<Post>lambdaQuery()
+        Post oldPost = postEntity.selectOne(Wrappers.<Post>lambdaQuery()
                 .eq(Post::getId, postEntity.getId())
                 .eq(Post::getUserId, postEntity.getUserId()));
-        AssertUtil.notNull(post);
+        AssertUtil.notNull(oldPost);
         Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent()).getData();
         AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
         postEntity.updateById();
-
-
+        if (!oldPost.getPoint().equals(postEntity.getPoint())){
+            // 更改积分
+            this.userRemoteApi.updateUserPoint(oldPost.getPoint(), postEntity.getPoint());
+        }
     }
 
     @Override
-    public void deletePost(Set<Long> ids) {
+    @Transactional(rollbackFor = Exception.class)
+    public void deletePost(Set<Long> ids, Long userId) {
         AssertUtil.collectionsIsNotNull(ids);
         //
-        // TODO: 2020/11/8 通过用户的id查询用户发的帖子
+        // TODO: 2020/11/8 通过用户的id和帖子的Id删除帖子,保证数据的准确性
+        ids.forEach(id->{
+            this.baseMapper.delete(Wrappers.<Post>lambdaUpdate()
+                    .eq(Post::getId,id)
+                    .eq(Post::getUserId,userId));
+        });
     }
 
     @Override

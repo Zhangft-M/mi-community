@@ -32,4 +32,19 @@ public interface IMiUserService extends IService<MiUser> {
      * @return
      */
     MiUserDTO getUserInfo(Long userId);
+
+    /**
+     * 更新用户的积分信息
+     * @param oldPoint /
+     * @param newPoint /
+     * @param userId /
+     */
+    void updateUserPoint(Integer oldPoint, Integer newPoint, Long userId);
+
+    /**
+     * 修改密码
+     * @param newPassword
+     * @param userId
+     */
+    void changePassword(String newPassword, Long userId);
 }
