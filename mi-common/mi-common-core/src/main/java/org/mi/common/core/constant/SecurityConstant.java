@@ -17,9 +17,17 @@ public interface SecurityConstant {
 
     String VERIFY_CODE_LOGIN = "/verifyCode/login";
 
-    String VERIFY_PATH = "/oauth/login";
+    String PASSWORD_LOGIN_PATH = "/oauth/login";
+
+    String PASSWORD_CHANGE_PATH = "/user/changePassword";
 
     String REGISTER_PATH = "/user/register";
 
     String VERIFY_DATA = "verifyData";
+
+    String[] VERIFY_CODE_VALIDATE_PATH = {VERIFY_CODE_LOGIN,REGISTER_PATH};
+
+    String[] PASSWORD_DECODE_PATH = {PASSWORD_LOGIN_PATH,PASSWORD_CHANGE_PATH};
+
+    String[] GOOGLE_CAPTCHA_VERIFY_PATH = {PASSWORD_LOGIN_PATH,"/post/add"};
 }

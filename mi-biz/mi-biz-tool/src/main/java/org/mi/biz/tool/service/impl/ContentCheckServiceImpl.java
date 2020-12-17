@@ -20,11 +20,11 @@ public class ContentCheckServiceImpl implements IContentCheckService {
 
     @Override
     public Checker checkTxt(String content, Long userId) {
-        return this.contentVerifyHelper.checkTxtContent(content,userId);
+        return this.contentVerifyHelper.tencentTextCheck(content,userId);
     }
 
     @Override
-    public Checker checkPic(String url, Long userId) {
-        return this.contentVerifyHelper.checkImageContent(url,userId);
+    public Checker checkPicFromUrl(String url, Long userId) {
+        return this.contentVerifyHelper.tencentImageUrlCheck(url,userId);
     }
 }

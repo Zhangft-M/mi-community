@@ -1,5 +1,6 @@
 package org.mi.biz.post;
 
+import org.mi.security.annotation.EnableCustomFeignClient;
 import org.mi.security.annotation.EnableCustomizeResourceServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  **/
 
 @SpringBootApplication
+@EnableCustomFeignClient
 @EnableCustomizeResourceServer
 public class MiPostApplication {
     public static void main(String[] args) {

@@ -15,8 +15,8 @@ public class CustomException extends BaseException {
         super(status);
     }
 
-    public CustomException(Integer code, String message) {
-        super(code, message);
+    public CustomException(HttpStatus status, String message) {
+        super(status, message);
     }
 
 }

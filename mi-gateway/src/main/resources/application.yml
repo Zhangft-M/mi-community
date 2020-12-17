@@ -16,6 +16,15 @@ spring:
     hiddenmethod:
       filter:
         enabled: false
+  redis:
+    cluster:
+      nodes:
+        - 81.70.197.232:6391
+        - 81.70.197.232:6392
+        - 81.70.197.232:6393
+        - 81.70.197.232:6394
+        - 81.70.197.232:6395
+        - 81.70.197.232:6396
 aliyun:
   captcha:
     region-id: cn-hangzhou

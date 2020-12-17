@@ -2,15 +2,12 @@ package org.mi.biz.tool.util;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.extra.mail.Mail;
-import cn.hutool.extra.mail.MailAccount;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mi.api.tool.dto.EmailDTO;
-import org.mi.biz.tool.config.MailConfig;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;

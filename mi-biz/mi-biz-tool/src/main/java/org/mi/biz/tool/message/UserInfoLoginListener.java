@@ -18,7 +18,7 @@ import java.util.Map;
  **/
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(consumerGroup = "USER-INFO-GROUP",topic = UserMessageConstant.SAVE_LOGIN_INFO_TOPIC,selectorExpression = UserMessageConstant.SAVE_LOGIN_INFO_TAG)
+@RocketMQMessageListener(consumerGroup = "USER-INFO-CONSUMER-GROUP",topic = UserMessageConstant.SAVE_LOGIN_INFO_TOPIC,selectorExpression = UserMessageConstant.SAVE_LOGIN_INFO_TAG)
 public class UserInfoLoginListener implements RocketMQListener<Map<String,Object>> {
 
     private final MiUserRemoteApi miUserRemoteApi;

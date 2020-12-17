@@ -33,9 +33,9 @@ public class ContentCheckController {
     }
 
     @GetMapping("pic")
-    public R<Checker> checkPic(String url){
+    public R<Checker> checkPicFromUrl(String url){
         Long userId = SecurityContextHelper.getUserId();
-        Checker checker = this.contentCheckService.checkPic(url,userId);
+        Checker checker = this.contentCheckService.checkPicFromUrl(url,userId);
         return R.success(checker);
     }
 }

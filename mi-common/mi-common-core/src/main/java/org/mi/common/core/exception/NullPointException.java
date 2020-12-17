@@ -12,15 +12,15 @@ public class NullPointException extends BaseException {
     private static final long serialVersionUID = 5161923247108315152L;
 
     public NullPointException() {
-        super(5000, "对象为空");
+        super(HttpStatus.INTERNAL_SERVER_ERROR, "对象为空");
     }
 
     public NullPointException(HttpStatus status) {
         super(status);
     }
 
-    public NullPointException(Integer code, String message) {
-        super(code, message);
+    public NullPointException(HttpStatus status, String message) {
+        super(status, message);
     }
 
 }

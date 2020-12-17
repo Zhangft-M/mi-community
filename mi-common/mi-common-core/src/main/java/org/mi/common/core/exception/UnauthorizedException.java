@@ -12,15 +12,15 @@ public class UnauthorizedException extends BaseException {
     private static final long serialVersionUID = -2184434921470317696L;
 
     public UnauthorizedException() {
-        super(4001,"未认证");
+        super(HttpStatus.UNAUTHORIZED,"未认证");
     }
 
     public UnauthorizedException(HttpStatus status) {
         super(status);
     }
 
-    public UnauthorizedException(Integer code, String message) {
-        super(code, message);
+    public UnauthorizedException(HttpStatus status, String message) {
+        super(status, message);
     }
 
 }

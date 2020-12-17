@@ -42,43 +42,45 @@ public class GoogleVerifyFilter extends AbstractGatewayFilterFactory<Object> {
             public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
                 String requestPath = exchange.getRequest().getURI().getPath();
                 HttpMethod method = exchange.getRequest().getMethod();
-                if (!Objects.requireNonNull(method).equals(HttpMethod.POST)){
-                    return Mono.error(new IllegalRequestException("非法请求"));
-                }
-                if (!StrUtil.containsIgnoreCase(requestPath, SecurityConstant.VERIFY_PATH)){
-                    return chain.filter(exchange);
-                }
-                // 对验证参数进行校验
-                return DataBufferUtils.join(exchange.getRequest().getBody()).map(dataBuffer -> {
-                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(bytes);
-                    DataBufferUtils.release(dataBuffer);
-                    return bytes;
-                }).flatMap(bodyBytes -> {
-                    String msg = new String(bodyBytes, StandardCharsets.UTF_8);
-                    boolean isJson = JSONUtil.isJson(msg);
-                    if (!isJson){
-                        return Mono.error(new IllegalParameterException("参数格式不正确"));
-                    }
-                    JSON params = JSONUtil.parse(msg);
-                    String verifyData = params.getByPath(SecurityConstant.VERIFY_DATA).toString();
-                    try {
-                        HttpResponse response = HttpUtil.createPost(VERIFY_PATH)
-                                .form("secret", APP_KEY)
-                                .form("response", verifyData)
-                                .form("remoteip", Objects.requireNonNull(exchange.getRequest().getRemoteAddress()).getAddress().getHostAddress()).execute();
-                        JSON jsonResponse = JSONUtil.parse(response.body());
-                        Boolean isSuccess = (Boolean) jsonResponse.getByPath("success");
-                        if (!isSuccess){
-                            return Mono.error(new IllegalRequestException("非法访问"));
+                for (String filterPath : SecurityConstant.GOOGLE_CAPTCHA_VERIFY_PATH) {
+                    if (StrUtil.containsIgnoreCase(requestPath, filterPath)) {
+                        if (!Objects.requireNonNull(method).equals(HttpMethod.POST)) {
+                            return Mono.error(new IllegalRequestException("非法请求"));
                         }
-                    } catch (Exception e) {
-                        return Mono.error(new IllegalRequestException("非法访问"));
+                        // 对验证参数进行校验
+                        return DataBufferUtils.join(exchange.getRequest().getBody()).map(dataBuffer -> {
+                            byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                            dataBuffer.read(bytes);
+                            DataBufferUtils.release(dataBuffer);
+                            return bytes;
+                        }).flatMap(bodyBytes -> {
+                            String msg = new String(bodyBytes, StandardCharsets.UTF_8);
+                            boolean isJson = JSONUtil.isJson(msg);
+                            if (!isJson) {
+                                return Mono.error(new IllegalParameterException("参数格式不正确"));
+                            }
+                            JSON params = JSONUtil.parse(msg);
+                            String verifyData = params.getByPath(SecurityConstant.VERIFY_DATA).toString();
+                            try {
+                                HttpResponse response = HttpUtil.createPost(VERIFY_PATH)
+                                        .form("secret", APP_KEY)
+                                        .form("response", verifyData)
+                                        .form("remoteip", Objects.requireNonNull(exchange.getRequest().getRemoteAddress()).getAddress().getHostAddress()).execute();
+                                JSON jsonResponse = JSONUtil.parse(response.body());
+                                Boolean isSuccess = (Boolean) jsonResponse.getByPath("success");
+                                if (!isSuccess) {
+                                    return Mono.error(new IllegalRequestException("非法访问"));
+                                }
+                            } catch (Exception e) {
+                                return Mono.error(new IllegalRequestException("非法访问"));
+                            }
+                            JSON loginData = (JSON) params.getByPath("loginData");
+                            exchange.getAttributes().put("loginData", loginData);
+                            return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), loginData.toJSONString(4).getBytes(StandardCharsets.UTF_8))).build());
+                        });
                     }
-                    JSON loginData = (JSON) params.getByPath("loginData");
-                    exchange.getAttributes().put("loginData",loginData);
-                    return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), loginData.toJSONString(4).getBytes(StandardCharsets.UTF_8))).build());
-                });
+                }
+                return chain.filter(exchange);
             }
         };
     }

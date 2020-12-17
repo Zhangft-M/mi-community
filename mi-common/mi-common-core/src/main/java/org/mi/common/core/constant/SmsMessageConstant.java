@@ -12,6 +12,8 @@ public interface SmsMessageConstant {
 
     String VERIFY_CODE_TAG = "code";
 
+    String PHONE_CODE_DESTINATION = VERIFY_CODE_TOPIC + ":" + VERIFY_CODE_TAG;
+
 
 
 }

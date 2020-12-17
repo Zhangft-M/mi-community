@@ -12,15 +12,15 @@ public class NoPermissionException extends BaseException {
     private static final long serialVersionUID = 6539174033178518190L;
 
     public NoPermissionException() {
-        super(4002,"权限不足");
+        super(HttpStatus.FORBIDDEN,"权限不足");
     }
 
     public NoPermissionException(HttpStatus status) {
         super(status);
     }
 
-    public NoPermissionException(Integer code, String message) {
-        super(code, message);
+    public NoPermissionException(HttpStatus status, String message) {
+        super(status, message);
     }
 
 

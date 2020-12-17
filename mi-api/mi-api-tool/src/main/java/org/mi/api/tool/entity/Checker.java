@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.common.mp.component.BaseEntity;
 
 import java.io.Serializable;
@@ -15,6 +16,7 @@ import java.io.Serializable;
  * @create: 2020-12-11 17:53
  **/
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("mi_check")
 public class Checker extends BaseEntity<Checker> implements Serializable {
 
@@ -25,7 +27,7 @@ public class Checker extends BaseEntity<Checker> implements Serializable {
 
     private Long userId;
 
-    private String txt;
+    private String content;
 
     private String url;
 

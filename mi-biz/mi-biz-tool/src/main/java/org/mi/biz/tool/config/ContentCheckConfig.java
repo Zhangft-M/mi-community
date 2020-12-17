@@ -5,6 +5,10 @@ import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
+import com.tencentcloudapi.cms.v20190321.CmsClient;
+import com.tencentcloudapi.common.Credential;
+import com.tencentcloudapi.common.profile.ClientProfile;
+import com.tencentcloudapi.common.profile.HttpProfile;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
@@ -38,5 +42,15 @@ public class ContentCheckConfig {
     }
 
 
+    @Bean
+    public CmsClient cmsClient(){
+        Credential cred = new Credential("AKIDOq2UiQkTdVGlzz80e8RSHqBoBJLNxK2X",
+                "92e4HblxwoPnmX7QTgeBSSFetxtbdRLe");
+        HttpProfile httpProfile = new HttpProfile();
+        httpProfile.setEndpoint("cms.tencentcloudapi.com");
+        ClientProfile clientProfile = new ClientProfile();
+        clientProfile.setHttpProfile(httpProfile);
+        return new CmsClient(cred, "ap-guangzhou", clientProfile);
+    }
 
 }

@@ -13,11 +13,11 @@ public class IllegalRequestException extends BaseException{
         super(status);
     }
     public IllegalRequestException(String message) {
-        super(400, message);
+        super(HttpStatus.BAD_REQUEST, message);
     }
 
 
-    public IllegalRequestException(Integer code, String message) {
-        super(code, message);
+    public IllegalRequestException(HttpStatus status, String message) {
+        super(status, message);
     }
 }

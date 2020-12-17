@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mi.common.core.exception.BaseException;
 import org.mi.common.core.result.R;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,6 +34,7 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
 	@Override
 	public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
 		ServerHttpResponse response = exchange.getResponse();
+		response.setStatusCode(HttpStatus.BAD_REQUEST);
 
 		if (response.isCommitted()) {
 			return Mono.error(ex);
@@ -43,6 +46,13 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
 			response.setStatusCode(((ResponseStatusException) ex).getStatus());
 		}
 
+		if (ex instanceof BaseException) {
+			log.warn("出现异常ex=>{}",ex.getMessage());
+			response.setStatusCode(((BaseException) ex).getStatus());
+		}else if (ex instanceof RuntimeException) {
+			log.warn("出现运行时异常ex=>{}",ex.getMessage());
+			response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 		return response.writeWith(Mono.fromSupplier(() -> {
 			DataBufferFactory bufferFactory = response.bufferFactory();
 			try {

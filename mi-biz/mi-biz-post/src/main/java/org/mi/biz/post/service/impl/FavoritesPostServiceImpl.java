@@ -3,6 +3,7 @@ package org.mi.biz.post.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.mi.api.post.entity.UserPostFavorites;
 import org.mi.biz.post.mapper.FavoritesPostMapper;
@@ -31,26 +32,26 @@ public class FavoritesPostServiceImpl extends ServiceImpl<FavoritesPostMapper, U
 
     @Override
     public Set<Long> listFavoritesPostId(Long userId) {
-        Set<Long> results = new HashSet<>();
+        Set<Long> results = Sets.newConcurrentHashSet();
         Set<Object> cacheResults = this.redisUtils.sGet(RedisCacheConstant.USER_POST_FAVORITES + userId);
-        if (!CollUtil.isEmpty(cacheResults)) {
-            results.addAll(cacheResults.stream().map(val->Long.valueOf(val.toString())).collect(Collectors.toSet()));
-            return results;
+        if (CollUtil.isNotEmpty(cacheResults)) {
+            results.addAll(cacheResults.stream().map(data -> (Long) data).collect(Collectors.toSet()));
+        } else {
+            List<UserPostFavorites> userPostFavorites = this.baseMapper.selectList(Wrappers.<UserPostFavorites>lambdaQuery()
+                    .eq(UserPostFavorites::getUserId, userId)
+                    .eq(UserPostFavorites::getHasDelete, false));
+            results = userPostFavorites.stream().map(UserPostFavorites::getPostId).collect(Collectors.toSet());
+            this.redisUtils.sAdd(RedisCacheConstant.USER_POST_FAVORITES + userId, results);
         }
-        List<UserPostFavorites> userPostFavorites = this.baseMapper.selectList(Wrappers.<UserPostFavorites>lambdaQuery()
-                .eq(UserPostFavorites::getUserId, userId)
-                .eq(UserPostFavorites::getHasDelete, false));
-        results = userPostFavorites.stream().map(UserPostFavorites::getPostId).collect(Collectors.toSet());
-        this.redisUtils.sAdd(RedisCacheConstant.USER_POST_FAVORITES + userId,results);
         return results;
     }
 
     @Override
     public void addFavoritesPost(Long userId, Long postId, Integer type) {
-        if (type == 1){
-            this.redisUtils.sAdd(RedisCacheConstant.USER_POST_FAVORITES + userId,postId);
+        if (type == 1) {
+            this.redisUtils.sAdd(RedisCacheConstant.USER_POST_FAVORITES + userId, postId);
             return;
         }
-        this.redisUtils.setRemove(RedisCacheConstant.USER_POST_FAVORITES + userId,postId);
+        this.redisUtils.setRemove(RedisCacheConstant.USER_POST_FAVORITES + userId, postId);
     }
 }

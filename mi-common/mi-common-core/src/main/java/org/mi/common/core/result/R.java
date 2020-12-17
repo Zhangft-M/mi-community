@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: mi-community
@@ -105,8 +106,9 @@ public class R<T> extends ResponseEntity<T> {
 
 
 
-    public static <T extends BaseException> R<T> ofException(T e){
-        return new R<>(e.getStatus());
+    public static <T extends BaseException> R<String> ofException(T e){
+
+        return new R<>(e.getMessage(),e.getStatus());
     }
 
     public static  R<String> ofException(String message){

@@ -14,10 +14,8 @@ import org.mi.common.core.exception.SmsSendFailException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
 import org.mi.common.core.util.RedisUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.mi.security.annotation.Anonymous;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 
@@ -42,20 +40,21 @@ public class SmsController {
      * @param type 0 表示发送手机短信验证码,1表示发送邮箱验证码
      * @return /
      */
-    @GetMapping("sendCode")
-    public R<Void> sendCode(String contact, Integer type) {
+    @Anonymous
+    @PostMapping("/sendCode")
+    public R<Void> sendCode(@RequestParam("contact") String contact, @RequestParam("type") Integer type) {
         if (type == 0) {
             AssertUtil.isPhoneNumber(contact);
-            SendResult sendResult = this.rocketMQTemplate.syncSend(SmsMessageConstant.VERIFY_CODE_TOPIC + ":" + SmsMessageConstant.VERIFY_CODE_TAG, contact);
+            SendResult sendResult = this.rocketMQTemplate.syncSend(SmsMessageConstant.PHONE_CODE_DESTINATION, contact);
             if (!sendResult.getSendStatus().equals(SendStatus.SEND_OK)) {
                 throw new SmsSendFailException("系统错误消息发送失败,请稍后重试");
             }
             return R.success();
         }
         EmailDTO emailDTO = new EmailDTO();
-        emailDTO.setTos(Collections.singletonList(contact));
+        emailDTO.setTo(contact);
         AssertUtil.isEmail(contact);
-        SendResult sendResult = this.rocketMQTemplate.syncSend(EmailConstant.EMAIL_TOPIC + ":" + EmailConstant.EMAIL_CODE_TAG, emailDTO);
+        SendResult sendResult = this.rocketMQTemplate.syncSend(EmailConstant.CODE_DESTINATION, emailDTO);
         if (!sendResult.getSendStatus().equals(SendStatus.SEND_OK)) {
             throw new SmsSendFailException("系统错误消息发送失败,请稍后重试");
         }
@@ -64,7 +63,7 @@ public class SmsController {
     }
 
     @PostMapping("validate/verifyCode")
-    public R<Void> validateVerifyCode(String contact, String code, Integer type) {
+    public R<Void> validateVerifyCode(String contact, String code) {
         AssertUtil.notBlank(code);
         String cacheCode = this.redisUtils.get(RedisCacheConstant.VERIFY_CODE_PREFIX + contact).toString();
         this.redisUtils.del(RedisCacheConstant.VERIFY_CODE_PREFIX + contact);

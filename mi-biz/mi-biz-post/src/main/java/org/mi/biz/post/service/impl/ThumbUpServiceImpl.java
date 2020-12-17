@@ -3,6 +3,7 @@ package org.mi.biz.post.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.mi.api.post.entity.ThumbUp;
 import org.mi.biz.post.mapper.ThumbUpMapper;
@@ -50,8 +51,7 @@ public class ThumbUpServiceImpl extends ServiceImpl<ThumbUpMapper, ThumbUp> impl
     @Override
     public Set<Long> listByUserId(Long userId) {
         Set<Object> list = this.redisUtils.sGet(ThumbUpConstant.USER_CONTENT_PREFIX + userId);
-        // List<Object> list = this.redisUtils.lGet(ThumbUpConstant.USER_CONTENT_PREFIX, 0, -1);
-        Set<Long> results = new HashSet<>();
+        Set<Long> results = Sets.newConcurrentHashSet();
         if (CollUtil.isNotEmpty(list)) {
             results.addAll(list.stream().map(data -> (Long) data).collect(Collectors.toSet()));
         } else {

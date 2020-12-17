@@ -23,8 +23,9 @@ public class FavoritesPostController {
 
     private final IFavoritesPostService favoritesPostService;
 
-    @GetMapping("{userId}")
-    public R<Set<Long>> listFavoritesPostId(@PathVariable Long userId){
+    @GetMapping("/ids")
+    public R<Set<Long>> listFavoritesPostId(){
+        Long userId = SecurityContextHelper.getUserId();
         return R.success(this.favoritesPostService.listFavoritesPostId(userId));
     }
 

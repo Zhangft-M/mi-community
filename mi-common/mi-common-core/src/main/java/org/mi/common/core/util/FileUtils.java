@@ -252,7 +252,7 @@ public class FileUtils {
         DateTime dateTime = new DateTime();
         return "images/" + dateTime.toString("yyyy")
                 + "/" + dateTime.toString("MM") + "/"
-                + dateTime.toString("dd") + "/" + System.currentTimeMillis() +
+                + dateTime.toString("dd")  + "/" +
                 id + "/" + IdUtil.simpleUUID() + "." +
                 FileUtil.getSuffix(FileUtils.toFile(multipartFile));
     }

@@ -13,6 +13,11 @@ import java.util.Set;
  * @create: 2020-12-09 15:39
  **/
 public interface IFavoritesPostService extends IService<UserPostFavorites> {
+    /**
+     * 查询用户的收藏帖子的id
+     * @param userId
+     * @return
+     */
     Set<Long> listFavoritesPostId(Long userId);
 
     /**

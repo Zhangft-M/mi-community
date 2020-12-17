@@ -24,5 +24,5 @@ public interface IContentCheckService {
      * @param userId
      * @return
      */
-    Checker checkPic(String url, Long userId);
+    Checker checkPicFromUrl(String url, Long userId);
 }

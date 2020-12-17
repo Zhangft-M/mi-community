@@ -3,12 +3,12 @@ package org.mi.biz.tool.controller;
 import lombok.RequiredArgsConstructor;
 import org.mi.api.tool.dto.PictureDTO;
 import org.mi.biz.tool.service.IPicService;
+import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
+import org.mi.security.annotation.Anonymous;
 import org.mi.security.util.SecurityContextHelper;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -24,10 +24,17 @@ public class PicController {
 
     private final IPicService picService;
 
-    @PostMapping
-    public R<String> uploadAvatarPic(MultipartFile multipartFile){
+    @Anonymous
+    @PostMapping("upload")
+    public R<String> uploadAvatarPic(@RequestParam("avatar") MultipartFile multipartFile){
         AssertUtil.isAvatarPic(multipartFile);
-        Long userId = SecurityContextHelper.getUserId();
-        return R.success(this.picService.uploadAvatarPic(multipartFile,userId));
+        // Long userId = SecurityContextHelper.getUserId();
+        return R.success(this.picService.uploadAvatarPic(multipartFile,0L));
+    }
+
+    @Anonymous
+    @GetMapping
+    public R<Void> exceptionTest(){
+        throw new IllegalParameterException("参数不合法");
     }
 }

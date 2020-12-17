@@ -60,34 +60,36 @@ public class PasswordDecodeFilter extends AbstractGatewayFilterFactory<Object> i
 
             @Override
             public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-                if (!StrUtil.containsIgnoreCase(exchange.getRequest().getURI().getPath(),SecurityConstant.VERIFY_PATH)) {
-                    return chain.filter(exchange);
+                for (String path : SecurityConstant.PASSWORD_DECODE_PATH) {
+                    if (StrUtil.containsIgnoreCase(exchange.getRequest().getURI().getPath(),path)){
+                        if (!Objects.equals(exchange.getRequest().getMethod(), HttpMethod.POST)) {
+                            return Mono.error(new IllegalRequestException("非法访问"));
+                        }
+                        JSON loginData = (JSON) exchange.getAttributes().get("loginData");
+                        String username = (String) loginData.getByPath("username");
+                        String password = (String) loginData.getByPath("password");
+                        String decodeUsername = null;
+                        String decodePassword = null;
+                        try {
+                            decodeUsername = this.rsa.decryptStr(username, KeyType.PrivateKey, StandardCharsets.UTF_8);
+                            decodePassword = this.rsa.decryptStr(password, KeyType.PrivateKey, StandardCharsets.UTF_8);
+                        } catch (Exception e) {
+                            return Mono.error(new RuntimeException("非法访问"));
+                        }
+                        AssertUtil.notBlank(decodeUsername, decodePassword);
+                        this.params.put(MiUserConstant.USER_NAME, decodeUsername);
+                        this.params.put(MiUserConstant.PASSWORD, decodePassword);
+                        this.params.put(AuthClientConstant.CLIENT_ID, this.clientConfigProperties.getClientId());
+                        this.params.put(AuthClientConstant.CLIENT_SECRET, this.clientConfigProperties.getClientSecret());
+                        this.params.put(AuthClientConstant.GRANT_TYPE, this.clientConfigProperties.getPasswordGrantType());
+                        this.params.put(AuthClientConstant.SCOPE, this.clientConfigProperties.getScope());
+                        String params = HttpUtil.toParams(this.params, StandardCharsets.UTF_8);
+                        URI newUri = UriComponentsBuilder.fromUri(exchange.getRequest().getURI()).replaceQuery(params).build(true).toUri();
+                        ServerHttpRequest serverHttpRequest = exchange.getRequest().mutate().uri(newUri).build();
+                        return chain.filter(exchange.mutate().request(serverHttpRequest).build());
+                    }
                 }
-                if (!Objects.equals(exchange.getRequest().getMethod(), HttpMethod.POST)) {
-                    return Mono.error(new IllegalRequestException("非法访问"));
-                }
-                JSON loginData = (JSON) exchange.getAttributes().get("loginData");
-                String username = (String) loginData.getByPath("username");
-                String password = (String) loginData.getByPath("password");
-                String decodeUsername = null;
-                String decodePassword = null;
-                try {
-                    decodeUsername = this.rsa.decryptStr(username, KeyType.PrivateKey, StandardCharsets.UTF_8);
-                    decodePassword = this.rsa.decryptStr(password, KeyType.PrivateKey, StandardCharsets.UTF_8);
-                } catch (Exception e) {
-                    return Mono.error(new RuntimeException("非法访问"));
-                }
-                AssertUtil.notBlank(decodeUsername, decodePassword);
-                this.params.put(MiUserConstant.USER_NAME, decodeUsername);
-                this.params.put(MiUserConstant.PASSWORD, decodePassword);
-                this.params.put(AuthClientConstant.CLIENT_ID, this.clientConfigProperties.getClientId());
-                this.params.put(AuthClientConstant.CLIENT_SECRET, this.clientConfigProperties.getClientSecret());
-                this.params.put(AuthClientConstant.GRANT_TYPE, this.clientConfigProperties.getPasswordGrantType());
-                this.params.put(AuthClientConstant.SCOPE, this.clientConfigProperties.getScope());
-                String params = HttpUtil.toParams(this.params, StandardCharsets.UTF_8);
-                URI newUri = UriComponentsBuilder.fromUri(exchange.getRequest().getURI()).replaceQuery(params).build(true).toUri();
-                ServerHttpRequest serverHttpRequest = exchange.getRequest().mutate().uri(newUri).build();
-                return chain.filter(exchange.mutate().request(serverHttpRequest).build());
+                return chain.filter(exchange);
             }
         };
     }

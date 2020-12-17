@@ -1,5 +1,6 @@
 package org.mi.biz.user;
 
+import org.mi.security.annotation.EnableCustomFeignClient;
 import org.mi.security.annotation.EnableCustomizeResourceServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @create: 2020-10-25 14:58
  **/
 
+@EnableCustomFeignClient
 @SpringBootApplication
 @EnableCustomizeResourceServer
 public class MiUserApplication {

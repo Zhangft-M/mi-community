@@ -13,6 +13,7 @@ import org.mi.common.core.exception.ContentNotSaveException;
 import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.util.FileUtils;
 import org.mi.common.core.util.PhoneUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,7 +60,7 @@ public class AssertUtil {
 
     public static void idIsNull(Long id) {
         if (!Objects.isNull(id)) {
-            throw new IllegalParameterException(400, "已经存在Id");
+            throw new IllegalParameterException(HttpStatus.BAD_REQUEST, "已经存在Id");
         }
     }
 
@@ -71,20 +72,20 @@ public class AssertUtil {
 
     public static void idIsNotNull(Long id) {
         if (Objects.isNull(id)) {
-            throw new IllegalParameterException(400, "没有id");
+            throw new IllegalParameterException(HttpStatus.BAD_REQUEST, "没有id");
         }
     }
 
     public static <T> void collectionsIsNotNull(Collection<T> collection) {
         if (CollUtil.isEmpty(collection)) {
-            throw new IllegalParameterException(400, "集合为空,不符合要求");
+            throw new IllegalParameterException(HttpStatus.BAD_REQUEST, "集合为空,不符合要求");
         }
     }
 
     public static <T> void isPhoneNumber(String phoneNumber) {
         AssertUtil.notBlank(phoneNumber);
         try {
-            if (PhoneUtils.isPhoneLegal(phoneNumber)) {
+            if (!PhoneUtils.isPhoneLegal(phoneNumber)) {
                 throw new IllegalParameterException("手机号格式不正确,仅支持大陆和香港手机号");
             }
         } catch (Exception e) {

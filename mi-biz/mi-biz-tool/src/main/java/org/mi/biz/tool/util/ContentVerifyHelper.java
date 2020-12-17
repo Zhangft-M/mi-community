@@ -12,14 +12,20 @@ import com.aliyuncs.http.HttpResponse;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.http.ProtocolType;
 import com.aliyuncs.profile.IClientProfile;
+import com.tencentcloudapi.cms.v20190321.CmsClient;
+import com.tencentcloudapi.cms.v20190321.models.*;
+import com.tencentcloudapi.common.AbstractModel;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.mi.api.tool.entity.Checker;
 import org.mi.common.core.constant.ContentCheckConstant;
 import org.mi.common.core.exception.ContentNotSaveException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Base64Utils;
 
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -38,23 +44,30 @@ public class ContentVerifyHelper {
 
     private final IAcsClient acsClient;
 
+    private final CmsClient cmsClient;
 
-    public Checker checkTxtContent(String content,Long userId) {
+
+    public Checker aliyunCheckTxtContent(String content,Long userId) {
         // 获取请求对象
         TextScanRequest textScanRequest = getTextScanRequest(content);
         // 发送请求
         try {
             HttpResponse response = this.acsClient.doAction(textScanRequest);
-            Checker checker = new Checker();
-            checker.setTxt(content);
-            checker.setType(0);
-            checker.setUserId(userId);
+            Checker checker = initTextChecker(content, userId);
             dealResponse(checker, response);
             return checker;
         } catch (ClientException e) {
             log.error("文本检验失败:{}", e.getErrMsg());
             throw new RuntimeException("文本检验失败");
         }
+    }
+
+    private Checker initTextChecker(String content, Long userId) {
+        Checker checker = new Checker();
+        checker.setContent(content);
+        checker.setType(0);
+        checker.setUserId(userId);
+        return checker;
     }
 
     private void dealResponse(Checker t, HttpResponse response) {
@@ -93,20 +106,25 @@ public class ContentVerifyHelper {
      * @param url
      * @param userId
      */
-    public Checker checkImageContent(String url, Long userId) {
+    public Checker aliyunCheckImageContent(String url, Long userId) {
         ImageSyncScanRequest imageSyncScanRequest = this.getImageSyncScanRequest(url);
         try {
             HttpResponse httpResponse = this.acsClient.doAction(imageSyncScanRequest);
-            Checker checker = new Checker();
-            checker.setUrl(url);
-            checker.setType(1);
-            checker.setUserId(userId);
+            Checker checker = initImageUrlChecker(url, userId);
             this.dealResponse(checker, httpResponse);
             return checker;
         } catch (ClientException e) {
             log.error("图片检验失败:{}", e.getErrMsg());
             throw new RuntimeException("图片检验失败");
         }
+    }
+
+    private Checker initImageUrlChecker(String url, Long userId) {
+        Checker checker = new Checker();
+        checker.setUrl(url);
+        checker.setType(1);
+        checker.setUserId(userId);
+        return checker;
     }
 
     @SneakyThrows
@@ -120,6 +138,7 @@ public class ContentVerifyHelper {
                 checker.insert();
                 throw new ContentNotSaveException("内容涉嫌违规,人工审核中");
             case ContentCheckConstant.BLOCK:
+                checker.setHasDelete(true);
                  throw new ContentNotSaveException("内容涉嫌违规,请修改");
             default:
                 break;
@@ -180,5 +199,126 @@ public class ContentVerifyHelper {
         textScanRequest.setSysConnectTimeout(3000);
         textScanRequest.setSysReadTimeout(6000);
         return textScanRequest;
+    }
+
+    /**
+     * 腾讯云文本内容检测请求对象
+     */
+    private TextModerationRequest textModerationRequest(String content,Long userId){
+        TextModerationRequest req = new TextModerationRequest();
+        User user = new User();
+        user.setUserId(String.valueOf(userId));
+        user.setAccountType(7L);
+        req.setUser(user);
+        req.setContent(content);
+        return req;
+    }
+
+    /**
+     * 通过图片url地址进行检测
+     * @param url
+     * @return
+     */
+    private ImageModerationRequest imageUrlModerationRequest(String url){
+        ImageModerationRequest request = new ImageModerationRequest();
+        request.setFileUrl(url);
+        return request;
+    }
+
+    /**
+     * 直接对图片的内容进行检测
+     * @param content 图片进行base64加密的结果
+     * @return
+     */
+    private ImageModerationRequest imageContentModerationRequest(String content){
+        ImageModerationRequest request = new ImageModerationRequest();
+        request.setFileContent(content);
+        return request;
+    }
+
+    /**
+     * 调用腾讯云内容安全检测接口检测文本内容
+     * @param content /
+     * @param userId /
+     * @return /
+     */
+    public Checker tencentTextCheck(String content, Long userId){
+        TextModerationRequest textModerationRequest = this.textModerationRequest(Base64Utils.encodeToString(content.getBytes(StandardCharsets.UTF_8)),userId);
+        try {
+            TextModerationResponse response = this.cmsClient.TextModeration(textModerationRequest);
+            Checker checker = this.initTextChecker(content, userId);
+            this.dealTencentTextCheckResponse(checker,response);
+            return checker;
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("内容检测失败");
+        }
+    }
+
+    /**
+     * 根据图片的url对图片进行检测
+     * @param url
+     * @param userId
+     * @return
+     */
+    public Checker tencentImageUrlCheck(String url,Long userId){
+        ImageModerationRequest request = this.imageUrlModerationRequest(url);
+        try {
+            ImageModerationResponse response = this.cmsClient.ImageModeration(request);
+            Checker checker = this.initImageUrlChecker(url, userId);
+            this.dealTencentImageCheckResponse(checker,response);
+            return checker;
+        } catch (TencentCloudSDKException e) {
+            throw new RuntimeException("图片检测失败");
+        }
+    }
+
+    public Checker tencentImageContentCheck(String content,Long userId){
+        ImageModerationRequest request = this.imageContentModerationRequest(content);
+        try {
+            ImageModerationResponse response = this.cmsClient.ImageModeration(request);
+            Checker checker = this.initImageContentChecker(content,userId);
+            this.dealTencentImageCheckResponse(checker,response);
+            return checker;
+        } catch (TencentCloudSDKException e) {
+           log.warn("根据图片的内容检测图片失败:ex=>{}",e.toString());
+           throw new RuntimeException("图片检测失败");
+        }
+    }
+
+    private void dealTencentImageCheckResponse(Checker checker, ImageModerationResponse response) {
+        ImageData data = response.getData();
+        if (data.getEvilFlag() == 1){
+            checker.setStatus(false);
+            throw new ContentNotSaveException("内容有违法嫌疑,请修改后上传");
+        }
+        checker.setStatus(true);
+    }
+
+    private Checker initImageContentChecker(String content, Long userId) {
+        Checker checker = new Checker();
+        checker.setUserId(userId);
+        checker.setType(1);
+        checker.setContent(content);
+        return checker;
+    }
+
+
+    private void dealTencentTextCheckResponse(Checker checker, TextModerationResponse response) {
+        TextData data = response.getData();
+        String suggestion = data.getSuggestion();
+        this.dealTencentCheckResult(checker,suggestion);
+    }
+
+    /**
+     * 处理腾讯云检测结果
+     * @param checker /
+     * @param suggestion /
+     */
+    private void dealTencentCheckResult(Checker checker, String suggestion) {
+        if (suggestion == null){
+            checker.insert();
+            throw new ContentNotSaveException("内容涉嫌违法,人工审核中");
+        }
+        this.dealResult(suggestion,checker);
     }
 }

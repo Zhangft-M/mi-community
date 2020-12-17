@@ -17,10 +17,10 @@ public class SmsSendFailException extends BaseException {
     }
 
     public SmsSendFailException(String message) {
-        super(500, message);
+        super(HttpStatus.INTERNAL_SERVER_ERROR, message);
     }
 
-    public SmsSendFailException(Integer code, String message) {
-        super(code, message);
+    public SmsSendFailException(HttpStatus status, String message) {
+        super(status, message);
     }
 }

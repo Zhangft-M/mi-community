@@ -39,7 +39,7 @@ public class MiUserRemoteApiFallback implements MiUserRemoteApi {
     }
 
     @Override
-    public MiUserDTO selectById(Long userId) {
+    public MiUserDTO getUserInfo(Long userId) {
         return null;
     }
 }

@@ -45,8 +45,6 @@ public class MiUser extends BaseEntity<MiUser> {
 
     private String nickName;
 
-    private String backgroundImage;
-
     private String avatar;
 
     private Boolean status;

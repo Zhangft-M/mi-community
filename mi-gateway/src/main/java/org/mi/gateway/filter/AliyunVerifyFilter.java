@@ -58,7 +58,7 @@ public class AliyunVerifyFilter extends AbstractGatewayFilterFactory<Object> {
                 if (!Objects.requireNonNull(method).equals(HttpMethod.POST)){
                     return Mono.error(new IllegalRequestException("非法请求"));
                 }
-                if (!StrUtil.containsIgnoreCase(requestPath,SecurityConstant.VERIFY_PATH)){
+                if (!StrUtil.containsIgnoreCase(requestPath,SecurityConstant.PASSWORD_LOGIN_PATH)){
                     return chain.filter(exchange);
                 }
                 // 对验证参数进行校验

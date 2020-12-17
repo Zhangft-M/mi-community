@@ -1,6 +1,8 @@
 package org.mi.biz.tool;
 
 import org.mi.common.core.constant.FeignApiPackage;
+import org.mi.security.annotation.EnableCustomFeignClient;
+import org.mi.security.annotation.EnableCustomizeResourceServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -12,11 +14,11 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @author: Micah
  * @create: 2020-12-01 16:00
  **/
-@EnableFeignClients(basePackages = FeignApiPackage.USER_API_PACKAGE)
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-public class MiMsgApplication {
-
+@EnableCustomFeignClient
+@EnableCustomizeResourceServer
+public class MiToolApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MiMsgApplication.class);
+        SpringApplication.run(MiToolApplication.class);
     }
 }

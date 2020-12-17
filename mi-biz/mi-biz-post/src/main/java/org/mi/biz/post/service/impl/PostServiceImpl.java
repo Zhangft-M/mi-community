@@ -269,7 +269,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     public List<EsPostDTO> listByUserId(Long userId) {
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        boolQueryBuilder.must(QueryBuilders.termsQuery(MiUserConstant.USER_ID, userId));
+        boolQueryBuilder.must(QueryBuilders.termsQuery(MiUserConstant.USER_ID, userId.toString()));
         this.filterJunkData(boolQueryBuilder);
         NativeSearchQuery query = queryBuilder
                 .withQuery(boolQueryBuilder)

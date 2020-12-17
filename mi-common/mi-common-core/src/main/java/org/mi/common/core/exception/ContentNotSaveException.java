@@ -16,11 +16,11 @@ public class ContentNotSaveException extends BaseException {
         super(status);
     }
 
-    public ContentNotSaveException(Integer code, String message) {
+    public ContentNotSaveException(HttpStatus code, String message) {
         super(code, message);
     }
 
     public ContentNotSaveException(String message) {
-        super(400, message);
+        super(HttpStatus.BAD_REQUEST, message);
     }
 }

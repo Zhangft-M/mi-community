@@ -2,7 +2,7 @@ package org.mi.biz.tool.test;
 
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.junit.jupiter.api.Test;
-import org.mi.biz.tool.MiMsgApplication;
+import org.mi.biz.tool.MiToolApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @author: Micah
  * @create: 2020-12-01 16:08
  **/
-@SpringBootTest(classes = MiMsgApplication.class)
+@SpringBootTest(classes = MiToolApplication.class)
 public class SendMsgTest {
 
     @Autowired

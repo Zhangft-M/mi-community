@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  **/
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(consumerGroup = "EMAil-SEND-GROUP",topic = EmailConstant.EMAIL_TOPIC,
+@RocketMQMessageListener(consumerGroup = "EMAil-COMMENT-REPLY-CONSUMER-GROUP",topic = EmailConstant.EMAIL_TOPIC,
         selectorExpression = EmailConstant.EMAIL_COMMENT_REPLY_TAG)
 public class EmailCommentReplyListener implements RocketMQListener<EmailDTO> {
 

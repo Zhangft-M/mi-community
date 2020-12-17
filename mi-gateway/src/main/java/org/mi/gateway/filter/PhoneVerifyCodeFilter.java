@@ -46,49 +46,47 @@ import static org.mi.gateway.util.WebServerUtils.generateNewRequest;
 @RequiredArgsConstructor
 public class PhoneVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> {
 
-    @Autowired
-    private RedisUtils redisUtils;
+    private final RedisUtils redisUtils;
 
 
     @Override
     public GatewayFilter apply(Object config) {
         return new GatewayFilter() {
-
             @Override
             public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
                 RedisUtils redisUtils = PhoneVerifyCodeFilter.this.redisUtils;
                 ServerHttpRequest request = exchange.getRequest();
                 String path = request.getURI().getPath();
-                if (!StrUtil.containsIgnoreCase(path, SecurityConstant.VERIFY_CODE_LOGIN)) {
-                    if (!StrUtil.containsIgnoreCase(path,SecurityConstant.REGISTER_PATH)){
-                        return chain.filter(exchange);
+                for (String filterPath : SecurityConstant.VERIFY_CODE_VALIDATE_PATH) {
+                    if (StrUtil.containsIgnoreCase(path,filterPath)){
+                        if (!HttpMethod.POST.equals(request.getMethod())){
+                            return Mono.error(new IllegalRequestException("请求方法不正确"));
+                        }
+                        return DataBufferUtils.join(exchange.getRequest().getBody()).map(dataBuffer -> {
+                            byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                            dataBuffer.read(bytes);
+                            DataBufferUtils.release(dataBuffer);
+                            return bytes;
+                        }).flatMap(bodyBytes -> {
+                            String msg = new String(bodyBytes, StandardCharsets.UTF_8);
+                            boolean isJson = JSONUtil.isJson(msg);
+                            if (!isJson){
+                                return Mono.error(new IllegalParameterException("参数格式不正确"));
+                            }
+                            JSON param = JSONUtil.parse(msg);
+                            String phoneNumber =  String.valueOf(param.getByPath(MiUserConstant.PHONE_NUMBER));
+                            String verifyCode =  String.valueOf(param.getByPath(MiUserConstant.VERIFY_CODE));
+                            AssertUtil.notBlank(phoneNumber,verifyCode);
+                            String cacheVerifyCode = String.valueOf(redisUtils.get(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber));
+                            redisUtils.del(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
+                            if (!StrUtil.equals(cacheVerifyCode,verifyCode)){
+                                return Mono.error(new IllegalParameterException("验证码错误"));
+                            }
+                            return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
+                        });
                     }
                 }
-                if (!HttpMethod.POST.equals(request.getMethod())){
-                    return Mono.error(new IllegalRequestException("请求方法不正确"));
-                }
-                return DataBufferUtils.join(exchange.getRequest().getBody()).map(dataBuffer -> {
-                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(bytes);
-                    DataBufferUtils.release(dataBuffer);
-                    return bytes;
-                }).flatMap(bodyBytes -> {
-                    String msg = new String(bodyBytes, StandardCharsets.UTF_8);
-                    boolean isJson = JSONUtil.isJson(msg);
-                    if (!isJson){
-                        return Mono.error(new IllegalParameterException("参数格式不正确"));
-                    }
-                    JSON param = JSONUtil.parse(msg);
-                    String phoneNumber = (String) param.getByPath(MiUserConstant.PHONE_NUMBER);
-                    String verifyCode = (String) param.getByPath(MiUserConstant.VERIFY_CODE);
-                    AssertUtil.notBlank(phoneNumber,verifyCode);
-                    String cacheVerifyCode = (String) redisUtils.get(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
-                    redisUtils.del(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
-                    if (!StrUtil.equals(cacheVerifyCode,verifyCode)){
-                        return Mono.error(new IllegalParameterException("验证码错误"));
-                    }
-                    return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
-                });
+                return chain.filter(exchange);
             }
         };
     }

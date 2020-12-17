@@ -9,7 +9,14 @@ spring:
     rest:
       uris: http://8.129.40.60:9200
   redis:
-    host: 8.129.40.60
+    cluster:
+      nodes:
+        - 81.70.197.232:6391
+        - 81.70.197.232:6392
+        - 81.70.197.232:6393
+        - 81.70.197.232:6394
+        - 81.70.197.232:6395
+        - 81.70.197.232:6396
   application:
     name: MI-POST-SERVER
   cloud:
@@ -21,3 +28,7 @@ logging:
   file:
     name: mi-post
     path: E:\code\logfile
+rocketmq:
+  name-server: 8.129.40.60:9876
+  producer:
+    group: MI-POST-GROUP

@@ -17,19 +17,17 @@ public class BaseException extends RuntimeException {
 
     private static final long serialVersionUID = 3700420554380777548L;
 
-    private Integer code;
     private String message;
 
     private HttpStatus status;
 
     public BaseException(HttpStatus status) {
-        super(status.getReasonPhrase());
         this.status = status;
     }
 
-    public BaseException(Integer code, String message) {
-        super(message);
-        this.code = code;
+    public BaseException(HttpStatus status, String message) {
+        this.status = status;
         this.message = message;
     }
+
 }

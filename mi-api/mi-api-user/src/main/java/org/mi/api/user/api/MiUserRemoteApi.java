@@ -49,12 +49,9 @@ public interface MiUserRemoteApi {
      * @param newPoint/
      * @return
      */
-    void updateUserPoint(Integer oldPoint,Integer newPoint);
+    @PutMapping("/user/point")
+    void updateUserPoint(@RequestParam Integer oldPoint,@RequestParam Integer newPoint);
 
-    /**
-     * 根据用户的id查询用户信息
-     * @param userId
-     * @return
-     */
-    MiUserDTO selectById(Long userId);
+    @GetMapping("/info/{userId}")
+    MiUserDTO getUserInfo(@PathVariable("userId") Long userId);
 }
