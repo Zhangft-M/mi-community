@@ -54,7 +54,7 @@ public class VerifyCodeLoginServiceImpl implements IVerifyCodeLoginService {
         HashMap<String, String> map = Maps.newHashMapWithExpectedSize(3);
         map.put(OAuth2Utils.CLIENT_ID, loginParams.getClientId());
         map.put(OAuth2Utils.GRANT_TYPE,loginParams.getGrantType());
-        map.put(OAuth2Utils.SCOPE,loginParams.getScopes());
+        map.put(OAuth2Utils.SCOPE,loginParams.getScope());
         map.put("phoneNumber",loginParams.getPhoneNumber());
         TokenRequest tokenRequest = oAuth2RequestFactory.createTokenRequest(map, clientDetails);
         if (StrUtil.isNotBlank(loginParams.getClientId())) {

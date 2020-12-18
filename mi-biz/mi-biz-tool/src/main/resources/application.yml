@@ -24,6 +24,8 @@ spring:
         - 81.70.197.232:6394
         - 81.70.197.232:6395
         - 81.70.197.232:6396
+    lettuce:
+      shutdown-timeout: 3000ms
   mail:
     host: smtp.qq.com
     password: qyznrzfmcbfsbfhc
@@ -34,6 +36,8 @@ spring:
     url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
     password: weihanhan1005
+    hikari:
+      max-lifetime: 600000
   servlet:
     multipart:
       max-file-size: 10MB

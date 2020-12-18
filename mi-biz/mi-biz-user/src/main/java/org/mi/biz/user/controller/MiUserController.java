@@ -46,6 +46,9 @@ public class MiUserController {
 
     @GetMapping("/info/{userId}")
     public R<MiUserDTO> getUserInfo(@PathVariable Long userId){
+        if (userId == null){
+            userId = SecurityContextHelper.getUserId();
+        }
         return R.success(this.miUserService.getUserInfo(userId));
     }
 

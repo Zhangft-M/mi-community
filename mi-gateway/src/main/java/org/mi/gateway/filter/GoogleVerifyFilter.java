@@ -76,7 +76,7 @@ public class GoogleVerifyFilter extends AbstractGatewayFilterFactory<Object> {
                             }
                             JSON loginData = (JSON) params.getByPath("loginData");
                             exchange.getAttributes().put("loginData", loginData);
-                            return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), loginData.toJSONString(4).getBytes(StandardCharsets.UTF_8))).build());
+                            return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
                         });
                     }
                 }

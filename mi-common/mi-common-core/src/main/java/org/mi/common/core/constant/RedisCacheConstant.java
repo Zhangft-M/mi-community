@@ -16,4 +16,6 @@ public interface RedisCacheConstant {
 
     String USER_POST_FAVORITES = "user:favorites:";
 
+    String USER_INFO_CACHE_KEY = "userInfo:id:";
+
 }

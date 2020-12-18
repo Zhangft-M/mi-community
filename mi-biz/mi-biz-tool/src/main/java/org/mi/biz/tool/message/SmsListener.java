@@ -38,7 +38,7 @@ public class SmsListener implements RocketMQListener<String> {
 
     @Override
     public void onMessage(String phoneNumber) {
-        String code = RandomUtil.randomNumbers(6);
+        Integer code = Integer.valueOf(RandomUtil.randomNumbers(6));
         this.sendSmsRequest.setPhoneNumbers(phoneNumber);
         this.sendSmsRequest.setTemplateParam("{\"code\":\"" + code + "\"}");
         try {

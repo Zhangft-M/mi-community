@@ -8,6 +8,8 @@ import org.mi.common.core.result.R;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @program: mi-community
  * @description: 验证码登录授权
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class VerifyCodeLoginController {
 
     private final IVerifyCodeLoginService verifyCodeLoginService;
+
 
     @PostMapping("login")
     public R<OAuth2AccessToken> verifyCodeLogin(LoginParams loginParams){

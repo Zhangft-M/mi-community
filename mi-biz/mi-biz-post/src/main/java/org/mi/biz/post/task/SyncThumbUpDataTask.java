@@ -51,7 +51,7 @@ public class SyncThumbUpDataTask {
     /**
      * 同步点赞的用户与评论相连接的表
      */
-    @Scheduled(cron = "* * 0 * * ?")
+    @Scheduled(cron = "0 0 0 */1 * ?")
     @Transactional(rollbackFor = Exception.class)
     public void syncVoteUpData(){
       log.info("----------------------------开始同步点赞数据,开始时间为{}------------------------------",LocalDateTime.now());
@@ -79,7 +79,7 @@ public class SyncThumbUpDataTask {
     /**
      * 同步点赞的用户与评论相连接的表
      */
-    @Scheduled(cron = "* * 0 * * ?")
+    @Scheduled(cron = "0 0 0 */1 * ?")
     @Transactional(rollbackFor = Exception.class)
     public void syncThumbUpData(){
         log.info("----------------------------开始同步用户与点赞评论数据,开始时间为{}------------------------------",LocalDateTime.now());

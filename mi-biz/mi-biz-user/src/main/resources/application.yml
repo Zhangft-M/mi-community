@@ -5,6 +5,8 @@ spring:
     url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
     password: weihanhan1005
+    hikari:
+      max-lifetime: 500000
   redis:
     cluster:
       nodes:

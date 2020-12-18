@@ -1,6 +1,7 @@
 package org.mi.auth.model;
 
 import lombok.Data;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
@@ -27,7 +28,7 @@ public class LoginParams implements Serializable {
     @NotBlank
     private String grantType;
 
-    private String scopes;
+    private String scope;
 
     private String phoneNumber;
 }

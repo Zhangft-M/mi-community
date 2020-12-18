@@ -52,6 +52,6 @@ public class EmailCodeListener implements RocketMQListener<EmailDTO> {
         message.setContent(code);
         message.setTitle("邮箱验证码");
         this.mailHelper.sendEmail(message,"emailCode.ftl");
-        this.redisUtils.set(RedisCacheConstant.VERIFY_CODE_PREFIX + message.getTo(), code, 5, TimeUnit.MINUTES);
+        this.redisUtils.set(RedisCacheConstant.VERIFY_CODE_PREFIX + message.getTo(), Integer.valueOf(code), 5, TimeUnit.MINUTES);
     }
 }

@@ -1,6 +1,5 @@
 package org.mi.biz.tool.controller;
 
-import cn.hutool.extra.mail.MailUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
