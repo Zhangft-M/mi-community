@@ -47,4 +47,20 @@ public interface IMiUserService extends IService<MiUser> {
      * @param userId
      */
     void changePassword(String newPassword, Long userId);
+
+    /**
+     * 注销用户,永久删除
+     * @param userId /
+     * @param phoneNumber /
+     * @param verifyCode /
+     */
+    void deleteUser(Long userId, String phoneNumber, String verifyCode);
+
+    /**
+     * 更新用户信息
+     * @param user
+     * @param code
+     * @return
+     */
+    MiUserDTO updateUserInfo(MiUser user, String code);
 }

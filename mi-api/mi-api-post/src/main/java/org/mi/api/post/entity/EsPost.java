@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
  * @create: 2020-11-07 16:36
  **/
 @Data
-@Document(indexName = "mi-community")
+@Document(indexName = "mi_post")
 public class EsPost implements Serializable {
 
     private static final long serialVersionUID = 827005331631540310L;
@@ -36,8 +36,8 @@ public class EsPost implements Serializable {
     @Field(value = "user_id")
     private Long userId;
 
-    @Field(analyzer = "ik_max_word")
-    private String username;
+    @Field(value = "user_nick_name",analyzer = "ik_max_word")
+    private String userNickName;
 
     @Field(value = "user_avatar")
     private String userAvatar;

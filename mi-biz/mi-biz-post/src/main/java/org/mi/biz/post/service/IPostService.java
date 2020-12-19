@@ -67,4 +67,10 @@ public interface IPostService extends IService<Post> {
      * @return
      */
     List<EsPostDTO> listUserFavorites(Long userId);
+
+    /**
+     * 根据用户的id删除用户发的帖子
+     * @param userId /
+     */
+    void deletePostByUserId(Long userId);
 }

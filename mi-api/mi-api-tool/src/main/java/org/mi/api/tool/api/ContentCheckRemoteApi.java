@@ -5,6 +5,7 @@ import org.mi.api.tool.api.fallback.contentCheckRemoteApiFallback;
 import org.mi.api.tool.entity.Checker;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @program: mi-community
@@ -21,7 +22,7 @@ public interface ContentCheckRemoteApi {
      * @return
      */
     @GetMapping("/content/check/txt")
-    R<Checker> checkTxt(String content);
+    R<Checker> checkTxt(@RequestParam("content") String content);
 
     /**
      * 图片检验
@@ -29,5 +30,5 @@ public interface ContentCheckRemoteApi {
      * @return
      */
     @GetMapping("/content/check/pic")
-    R<Checker> checkPic(String url);
+    R<Checker> checkPic(@RequestParam("url") String url);
 }

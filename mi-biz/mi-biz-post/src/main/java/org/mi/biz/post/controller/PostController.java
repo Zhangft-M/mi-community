@@ -11,6 +11,7 @@ import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.PageResult;
 import org.mi.common.core.result.R;
 import org.mi.security.annotation.Anonymous;
+import org.mi.security.annotation.Inner;
 import org.mi.security.util.SecurityContextHelper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +78,13 @@ public class PostController {
     public R<Void> delete(Set<Long> ids){
         Long userId = SecurityContextHelper.getUserId();
         this.postService.deletePost(ids,userId);
+        return R.success();
+    }
+
+    @Inner
+    @DeleteMapping("byUserId")
+    public R<Void> deleteByUserId(Long userId){
+        this.postService.deletePostByUserId(userId);
         return R.success();
     }
 

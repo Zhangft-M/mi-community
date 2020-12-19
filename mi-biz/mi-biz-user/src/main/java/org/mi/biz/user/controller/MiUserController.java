@@ -33,7 +33,6 @@ public class MiUserController {
 
     private final IMiUserService miUserService;
 
-    private final RocketMQTemplate rocketMQTemplate;
 
 
 
@@ -72,15 +71,13 @@ public class MiUserController {
         return R.fail();
     }
 
-    @PutMapping("update")
-    public R<Void> updateUserInfo(@RequestBody MiUser user){
+    @PutMapping("update/{code}")
+    public R<MiUserDTO> updateUserInfo(@RequestBody MiUser user, @PathVariable String code){
         AssertUtil.idIsNull(user.getId());
         Long userId = SecurityContextHelper.getUserId();
         user.setId(userId);
-        if (user.updateById()) {
-            return R.success();
-        }
-        return R.fail();
+        MiUserDTO userDTO = this.miUserService.updateUserInfo(user,code);
+        return R.success(userDTO);
     }
 
     /**
@@ -96,6 +93,14 @@ public class MiUserController {
         return R.success();
     }
 
+    @DeleteMapping("cancel")
+    public R<Void> deleteUser(@RequestParam("phoneNumber")String phoneNumber,
+                              @RequestParam("verifyCode")String verifyCode){
+        Long userId = SecurityContextHelper.getUserId();
+        this.miUserService.deleteUser(userId,phoneNumber,verifyCode);
+        return R.success();
+    }
+
     @PutMapping("changePassword")
     public R<Void> changePassword(String newPassword){
         AssertUtil.notBlank(newPassword);
@@ -103,7 +108,5 @@ public class MiUserController {
         this.miUserService.changePassword(newPassword,userId);
         return R.success();
     }
-
-
 
 }

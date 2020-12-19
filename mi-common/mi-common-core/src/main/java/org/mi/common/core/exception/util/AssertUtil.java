@@ -70,6 +70,12 @@ public class AssertUtil {
         }
     }
 
+    public static void idsIsNotNull(Long... ids) {
+        for (Long id : ids) {
+            idIsNotNull(id);
+        }
+    }
+
     public static void idIsNotNull(Long id) {
         if (Objects.isNull(id)) {
             throw new IllegalParameterException(HttpStatus.BAD_REQUEST, "没有id");

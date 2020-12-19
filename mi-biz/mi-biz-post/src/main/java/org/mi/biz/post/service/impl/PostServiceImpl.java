@@ -22,6 +22,7 @@ import org.mi.api.tool.api.ContentCheckRemoteApi;
 import org.mi.api.tool.entity.Checker;
 import org.mi.api.user.api.MiUserRemoteApi;
 import org.mi.biz.post.mapper.PostMapper;
+import org.mi.biz.post.service.ICommentService;
 import org.mi.biz.post.service.IFavoritesPostService;
 import org.mi.biz.post.service.IPostService;
 import org.mi.common.core.constant.MiUserConstant;
@@ -29,6 +30,7 @@ import org.mi.common.core.constant.ThumbUpConstant;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.PageResult;
 import org.mi.common.core.util.RedisUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -63,11 +65,18 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     private final MiUserRemoteApi userRemoteApi;
 
+    private ICommentService commentService;
+
     private final RedisUtils redisUtils;
 
     private final ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     private static final Boolean IS_RECOMMEND = true;
+
+    @Autowired
+    public void setCommentService(ICommentService commentService) {
+        this.commentService = commentService;
+    }
 
     @Override
     public EsPost getDataById(Long id) {
@@ -299,5 +308,18 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         }
         List<EsPost> postList = searchHits.getSearchHits().stream().map(SearchHit::getContent).collect(Collectors.toList());
         return this.postMapStruct.toDto(postList);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deletePostByUserId(Long userId) {
+        List<Post> posts = this.baseMapper.selectList(Wrappers.<Post>lambdaQuery().eq(Post::getUserId, userId));
+        if (CollUtil.isEmpty(posts)){
+            return;
+        }
+        posts.forEach(post -> {
+            this.commentService.deleteCommentByPostId(post.getId());
+        });
+        this.baseMapper.delete(Wrappers.<Post>lambdaUpdate().eq(Post::getUserId,userId));
     }
 }

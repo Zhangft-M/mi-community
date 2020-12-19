@@ -1,6 +1,7 @@
 package org.mi.biz.post.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
@@ -25,17 +26,22 @@ import org.mi.biz.post.service.ICommentService;
 import org.mi.biz.post.service.IPostService;
 import org.mi.common.core.constant.EmailConstant;
 import org.mi.common.core.constant.ThumbUpConstant;
+import org.mi.common.core.exception.IllegalOperationException;
+import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.SmsSendFailException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.util.RedisUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -53,7 +59,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     private final ContentCheckRemoteApi contentCheckRemoteApi;
 
-    private final IPostService postService;
+    private IPostService postService;
 
     private final MiUserRemoteApi miUserRemoteApi;
 
@@ -64,6 +70,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private final EsCommentMapStruct commentMapStruct;
 
     private List<CommentTree> secondFloorData;
+
+    @Autowired
+    public void setPostService(IPostService postService) {
+        this.postService = postService;
+    }
 
     @Override
     public List<CommentTree> list(Long postId) {
@@ -95,6 +106,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public CommentTree insertComment(Comment comment) {
+        Comment parentComment = null;
+        if (comment.getParentId() != null){
+            parentComment = this.baseMapper.selectById(comment.getParentId());
+            if (null == parentComment) {
+                throw new IllegalArgumentException("请求参数不对");
+            }
+        }else {
+            comment.setParentId(0L);
+        }
         String content = comment.getContent();
         Checker checker = this.contentCheckRemoteApi.checkTxt(content).getData();
         AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
@@ -106,7 +126,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 // 发送帖子回复
                 this.sendPostReplyEmail(esComment);
                 // 发送评论回复
-                this.senCommentReplyEmail(esComment);
+                this.senCommentReplyEmail(esComment,parentComment);
             }
 
             return Optional.ofNullable(this.commentMapStruct.toDto(esComment)).orElseGet(CommentTree::new);
@@ -118,13 +138,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * 发送评论回复
      *
      * @param esComment
+     * @param parentComment
      */
-    private void senCommentReplyEmail(EsComment esComment) {
+    private void senCommentReplyEmail(EsComment esComment, Comment parentComment) {
         if (!esComment.getReceiveReply()) {
             return;
         }
-        // 根据父级id查询上级的评论用户
-        Comment parentComment = this.baseMapper.selectById(esComment.getParentId());
+        if (esComment.getParentId() == 0){
+            return;
+        }
         if (null == parentComment) {
             return;
         }
@@ -155,12 +177,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     /**
-     * 发送回复邮件
+     * 发送帖子回复邮件
      *
      * @param comment /
      */
     private void sendPostReplyEmail(EsComment comment) {
         // 通过postId查找用户的信息
+        if (comment.getParentId() != 0){
+            return;
+        }
         Post post = this.postService.getById(comment.getPostId());
         if (null == post) {
             return;
@@ -211,7 +236,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
         if (!data.getId().equals(id)) {
             CommentTree tree = new CommentTree();
-            tree.setParentName(data.getParentName());
+            tree.setParentNickName(data.getParentNickName());
             tree.setHasAdoption(data.getHasAdoption());
             tree.setContent(data.getContent());
             tree.setId(data.getId());
@@ -220,7 +245,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             tree.setParentId(data.getParentId());
             tree.setUpdateTime(data.getUpdateTime());
             tree.setUserAvatar(data.getUserAvatar());
-            tree.setUsername(data.getUsername());
+            tree.setUserNickName(data.getUserNickName());
             tree.setVoteDown(data.getVoteDown());
             secondFloorData.add(tree);
         }
@@ -247,7 +272,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     if (null == commentTree.getChildren()) {
                         commentTree.setChildren(new ArrayList<>());
                     }
-                    node.setParentName(commentTree.getUsername());
+                    node.setParentNickName(commentTree.getUserNickName());
                     commentTree.add(node);
                 }
             }
@@ -274,4 +299,58 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteComment(Long userId, Long commentId, Long postId) {
+        Comment comment = this.baseMapper.selectById(commentId);
+        Post post = this.postService.getById(postId);
+        List<Long> deleteCommentIds = Lists.newCopyOnWriteArrayList();
+        if (null != comment){
+            if (comment.getUserId().equals(userId)){
+                // 递归遍历获得所有需要删除的id(包括当前节点的评论id和当前节点所有子节点的id)
+                this.listDeleteIds(commentId,deleteCommentIds);
+            }
+        }else if (null != post) {
+            if (post.getUserId().equals(userId)) {
+                this.listDeleteIds(commentId,deleteCommentIds);
+            }
+        }else {
+            throw new IllegalOperationException("没有权限进行该项操作");
+        }
+        this.removeByIds(deleteCommentIds);
+    }
+
+    /**
+     *
+     * @param commentId 当前节点的id
+     * @param deleteCommentIds 需要删除的节点的集合
+     */
+    private void listDeleteIds(Long commentId, List<Long> deleteCommentIds) {
+        deleteCommentIds.add(commentId);
+        List<Comment> comments = this.baseMapper.selectList(Wrappers.<Comment>lambdaQuery().eq(Comment::getParentId, commentId));
+        if (CollUtil.isEmpty(comments)){
+            return;
+        }
+        comments.forEach(comment -> this.listDeleteIds(comment.getId(),deleteCommentIds));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCommentByPostId(Long postId) {
+        this.baseMapper.delete(Wrappers.<Comment>lambdaUpdate().eq(Comment::getPostId,postId));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCommentByUserId(Long userId) {
+        List<Comment> comments = this.baseMapper.selectList(Wrappers.<Comment>lambdaQuery().eq(Comment::getUserId, userId));
+        if (CollUtil.isEmpty(comments)) {
+            return;
+        }
+        List<Long> deleteCommentIds = Lists.newCopyOnWriteArrayList();
+        comments.forEach(comment -> {
+            this.listDeleteIds(comment.getId(),deleteCommentIds);
+        });
+        this.removeByIds(deleteCommentIds);
+    }
 }

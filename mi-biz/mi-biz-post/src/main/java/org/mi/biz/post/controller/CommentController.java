@@ -7,6 +7,7 @@ import org.mi.biz.post.service.ICommentService;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
 import org.mi.security.annotation.Anonymous;
+import org.mi.security.annotation.Inner;
 import org.mi.security.util.SecurityContextHelper;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +40,29 @@ public class CommentController {
         comment.setUserId(userId);
         CommentTree commentTree = this.commentService.insertComment(comment);
         return R.success(commentTree);
+    }
+
+    @DeleteMapping
+    public R<Void> deleteComment(@RequestParam("postId") Long postId,@RequestParam("commentId") Long commentId){
+        AssertUtil.idsIsNotNull(postId,commentId);
+        Long userId = SecurityContextHelper.getUserId();
+        this.commentService.deleteComment(userId,commentId,postId);
+        return R.success();
+    }
+
+    @DeleteMapping("byPostId")
+    public R<Void> deleteComment(@RequestParam("postId") Long postId){
+        AssertUtil.idIsNotNull(postId);
+        this.commentService.deleteCommentByPostId(postId);
+        return R.success();
+    }
+
+    @Inner
+    @DeleteMapping("byUserId")
+    public R<Void> deleteCommentByUserId(Long userId){
+        AssertUtil.idIsNotNull(userId);
+        this.commentService.deleteCommentByUserId(userId);
+        return R.success();
     }
 
 }

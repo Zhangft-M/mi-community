@@ -29,9 +29,9 @@ public class CommentTree implements Serializable {
 
     private Integer voteDown;
 
-    private String username;
+    private String userNickName;
 
-    private String parentName;
+    private String parentNickName;
 
     private String userAvatar;
 

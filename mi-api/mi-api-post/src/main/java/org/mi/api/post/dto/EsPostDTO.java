@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * @program: mi-community
- * @description:
+ * @description: 个人主页展示的数据
  * @author: Micah
  * @create: 2020-11-07 17:32
  **/

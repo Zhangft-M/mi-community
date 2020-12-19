@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * @create: 2020-11-19 18:23
  **/
 @Data
-@Document(indexName = "mi-comment")
+@Document(indexName = "mi_comment")
 public class EsComment implements Serializable {
 
     private static final long serialVersionUID = -647720574304540351L;
@@ -33,7 +33,8 @@ public class EsComment implements Serializable {
     @Field(value = "user_id")
     private Long userId;
 
-    private String username;
+    @Field(value = "user_nick_name")
+    private String userNickName;
 
     @Field(value = "user_avatar")
     private String userAvatar;

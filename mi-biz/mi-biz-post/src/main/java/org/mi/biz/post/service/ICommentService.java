@@ -28,4 +28,24 @@ public interface ICommentService extends IService<Comment> {
      * @return /
      */
     CommentTree insertComment(Comment comment);
+
+    /**
+     * 根据用户的id删除评论,删除当前级以及下级的所有回复评论
+     * @param userId
+     * @param commentId
+     * @param postId
+     */
+    void deleteComment(Long userId, Long commentId, Long postId);
+
+    /**
+     * 通过postId删除评论
+     * @param postId /
+     */
+    void deleteCommentByPostId(Long postId);
+
+    /**
+     * 通过用户的id来删除评论
+     * @param userId
+     */
+    void deleteCommentByUserId(Long userId);
 }
