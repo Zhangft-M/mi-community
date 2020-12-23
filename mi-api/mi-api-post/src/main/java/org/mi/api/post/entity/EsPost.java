@@ -68,7 +68,7 @@ public class EsPost implements Serializable {
     @Field(value = "view_count")
     private Integer viewCount;
 
-    private Integer reward;
+    private Integer point;
 
     @Field(value = "has_delete")
     private Boolean delete;

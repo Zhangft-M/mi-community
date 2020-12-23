@@ -73,4 +73,5 @@ public interface IPostService extends IService<Post> {
      * @param userId /
      */
     void deletePostByUserId(Long userId);
+
 }

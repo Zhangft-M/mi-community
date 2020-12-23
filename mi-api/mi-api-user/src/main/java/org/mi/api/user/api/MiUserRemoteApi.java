@@ -24,7 +24,8 @@ public interface MiUserRemoteApi {
      * @return
      */
     @GetMapping("/user/{type}")
-    ResponseEntity<MiUser> loadUserByUsername(@RequestParam(name = "certificate") String certificate, @PathVariable(name = "type") Integer type, @RequestHeader("from") String from);
+    ResponseEntity<MiUser> loadUserByUsername(@RequestParam(name = "certificate") String certificate, @PathVariable(name = "type") Integer type, @RequestHeader("from") String from,
+                                              @RequestHeader("innerRequestCertificate") String innerRequestCertificate);
 
     /**
      * 更新登录信息
@@ -50,7 +51,8 @@ public interface MiUserRemoteApi {
      * @return
      */
     @PutMapping("/user/point")
-    void updateUserPoint(@RequestParam Integer oldPoint,@RequestParam Integer newPoint);
+    void updateUserPoint(@RequestParam Integer oldPoint,@RequestParam Integer newPoint,
+                         @RequestParam("userId") Long userId);
 
     @GetMapping("/info/{userId}")
     MiUserDTO getUserInfo(@PathVariable("userId") Long userId);

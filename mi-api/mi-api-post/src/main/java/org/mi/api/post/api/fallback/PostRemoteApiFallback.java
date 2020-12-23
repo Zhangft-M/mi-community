@@ -2,7 +2,10 @@ package org.mi.api.post.api.fallback;
 
 import lombok.extern.slf4j.Slf4j;
 import org.mi.api.post.api.PostRemoteApi;
+import org.mi.api.post.entity.Post;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @program: mi-community
@@ -17,5 +20,10 @@ public class PostRemoteApiFallback implements PostRemoteApi {
     public void deleteByUserId(Long userId, String from) {
         log.warn("调用根据用户id删除帖子的接口失败");
         throw new RuntimeException("调用根据用户id删除帖子的接口失败");
+    }
+
+    @Override
+    public void updateBatchById(List<Post> postList) {
+
     }
 }

@@ -41,4 +41,6 @@ public class Comment extends BaseEntity<Comment> {
     private Boolean hasAdoption;
 
     private Boolean status;
+
+    private Boolean receiveReply;
 }

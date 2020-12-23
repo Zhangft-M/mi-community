@@ -10,18 +10,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.mi.api.post.api.CommentRemoteApi;
 import org.mi.api.post.api.PostRemoteApi;
+import org.mi.api.tool.api.ContentCheckRemoteApi;
 import org.mi.api.tool.api.VerifyCodeValidateRemoteApi;
+import org.mi.api.tool.entity.Checker;
 import org.mi.api.user.dto.MiUserDTO;
 import org.mi.api.user.entity.MiUser;
 import org.mi.api.user.entity.MiUserRole;
 import org.mi.api.user.mapstruct.MiUserMapStruct;
 import org.mi.biz.user.mapper.MiUserMapper;
 import org.mi.biz.user.service.IMiUserService;
+import org.mi.common.core.constant.RedisCacheConstant;
 import org.mi.common.core.constant.SecurityConstant;
+import org.mi.common.core.exception.ContentNotSaveException;
 import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.util.RedisUtils;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +43,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 @Slf4j
 @Service
-@CacheConfig(cacheNames = "user")
 @RequiredArgsConstructor
 public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> implements IMiUserService {
 
@@ -48,6 +53,8 @@ public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> impleme
     private final MiUserMapStruct miUserMapStruct;
 
     private final VerifyCodeValidateRemoteApi verifyCodeValidateRemoteApi;
+
+    private final ContentCheckRemoteApi contentCheckRemoteApi;
 
     private final PostRemoteApi postRemoteApi;
 
@@ -63,7 +70,7 @@ public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> impleme
     }
 
     @Override
-    // @Cacheable(key = MiUserConstant.USER_INFO_CACHE_KEY + "#p0")
+    @Cacheable(value = RedisCacheConstant.USER_INFO_CACHE_PREFIX ,key = "#p0",unless = "#result==null")
     public MiUserDTO getUserInfo(Long userId) {
         MiUser user = this.getById(userId);
         return Optional.ofNullable(this.miUserMapStruct.toDto(user)).orElseGet(MiUserDTO::new);
@@ -115,6 +122,8 @@ public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> impleme
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = RedisCacheConstant.USER_INFO_CACHE_PREFIX ,key = "#p0")
     public void deleteUser(Long userId, String phoneNumber, String verifyCode) {
         // 验证验证码是否正确
         this.verifyCodeValidateRemoteApi.validateVerifyCode(phoneNumber,verifyCode);
@@ -125,6 +134,8 @@ public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> impleme
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = RedisCacheConstant.USER_INFO_CACHE_PREFIX ,key = "#p0.id")
     public MiUserDTO updateUserInfo(MiUser user, String code) {
         MiUser oldUser = this.baseMapper.selectById(user.getId());
         if (StrUtil.isNotEmpty(user.getPhone())) {
@@ -141,6 +152,13 @@ public class MiUserServiceImpl extends ServiceImpl<MiUserMapper, MiUser> impleme
                 oldUser.setEmail(user.getEmail());
                 oldUser.updateById();
                 return this.miUserMapStruct.toDto(oldUser);
+            }
+        }
+        if (StrUtil.isNotEmpty(user.getNickName())) {
+            // 内容审核
+            Checker checker = this.contentCheckRemoteApi.checkTxt(user.getNickName());
+            if (!checker.getStatus()) {
+                throw new ContentNotSaveException("内容涉嫌违法,正在审核中");
             }
         }
         CopyOptions copyOptions = CopyOptions.create();

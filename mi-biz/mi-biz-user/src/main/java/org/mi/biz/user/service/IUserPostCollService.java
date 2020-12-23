@@ -1,9 +1,9 @@
-package org.mi.biz.post.service;
+package org.mi.biz.user.service;
+
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.mi.api.post.entity.UserPostFavorites;
+import org.mi.api.user.entity.UserPostCollections;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -12,13 +12,13 @@ import java.util.Set;
  * @author: Micah
  * @create: 2020-12-09 15:39
  **/
-public interface IFavoritesPostService extends IService<UserPostFavorites> {
+public interface IUserPostCollService extends IService<UserPostCollections> {
     /**
      * 查询用户的收藏帖子的id
      * @param userId
      * @return
      */
-    Set<Long> listFavoritesPostId(Long userId);
+    Set<Long> listUserCollectPostId(Long userId);
 
     /**
      * 添加或删除收藏
@@ -26,5 +26,5 @@ public interface IFavoritesPostService extends IService<UserPostFavorites> {
      * @param postId
      * @param type
      */
-    void addFavoritesPost(Long userId, Long postId, Integer type);
+    void addCollectPost(Long userId, Long postId, Integer type);
 }

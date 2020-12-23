@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Email;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @program: mi-community
@@ -39,7 +40,5 @@ public class MiUserDTO implements Serializable {
 
     private Integer postCount;
 
-    public String getGenderName() {
-        return gender == 1 ? "男":"女";
-    }
+    private LocalDateTime createTime;
 }

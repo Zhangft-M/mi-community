@@ -6,6 +6,7 @@ import org.mi.api.tool.entity.Checker;
 import org.mi.biz.tool.service.IContentCheckService;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
+import org.mi.security.annotation.Anonymous;
 import org.mi.security.util.SecurityContextHelper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ContentCheckController {
 
     private final IContentCheckService contentCheckService;
+
 
 
     @GetMapping("txt")

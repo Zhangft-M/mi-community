@@ -3,7 +3,6 @@ package org.mi.post.test;
 import org.junit.jupiter.api.Test;
 import org.mi.biz.post.MiPostApplication;
 import org.mi.common.core.constant.RedisCacheConstant;
-import org.mi.common.core.constant.ThumbUpConstant;
 import org.mi.common.core.util.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

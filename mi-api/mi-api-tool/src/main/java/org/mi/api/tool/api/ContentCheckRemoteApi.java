@@ -22,7 +22,7 @@ public interface ContentCheckRemoteApi {
      * @return
      */
     @GetMapping("/content/check/txt")
-    R<Checker> checkTxt(@RequestParam("content") String content);
+   Checker checkTxt(@RequestParam("content") String content);
 
     /**
      * 图片检验
@@ -30,5 +30,5 @@ public interface ContentCheckRemoteApi {
      * @return
      */
     @GetMapping("/content/check/pic")
-    R<Checker> checkPic(@RequestParam("url") String url);
+    Checker checkPic(@RequestParam("url") String url);
 }

@@ -14,14 +14,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class contentCheckRemoteApiFallback implements ContentCheckRemoteApi {
 
-
     @Override
-    public R<Checker> checkTxt(String content) {
+    public Checker checkTxt(String content) {
         return null;
     }
 
     @Override
-    public R<Checker> checkPic(String url) {
+    public Checker checkPic(String url) {
         return null;
     }
 }

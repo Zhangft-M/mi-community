@@ -68,9 +68,7 @@ public class Post extends BaseEntity<Post> {
      */
     private Boolean ending;
 
-    /**
-     * 用户拥有的积分
-     */
+
     private Integer point;
 
 

@@ -14,8 +14,14 @@ public interface RedisCacheConstant {
 
     String VERIFY_CODE_PREFIX = "verify:code:";
 
-    String USER_POST_FAVORITES = "user:favorites:";
+    String USER_COLLECT_POST = "user:collect:id:";
 
-    String USER_INFO_CACHE_KEY = "userInfo:id:";
+    String USER_DETAILS_INFO_CACHE_PREFIX = "user:details:info:certificate:";
+
+    String USER_INFO_CACHE_PREFIX = "user:info:id:";
+
+    String POST_CATEGORIES_CACHE_PREFIX = "post:categories";
+
+    String USER_TODAY_HAS_LOGIN = "user:today:has:login:";
 
 }

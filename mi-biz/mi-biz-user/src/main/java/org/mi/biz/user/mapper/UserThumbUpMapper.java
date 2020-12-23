@@ -1,7 +1,7 @@
-package org.mi.biz.post.mapper;
+package org.mi.biz.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.mi.api.post.entity.ThumbUp;
+import org.mi.api.user.entity.UserThumbUp;
 
 /**
  * @program: mi-community
@@ -9,5 +9,5 @@ import org.mi.api.post.entity.ThumbUp;
  * @author: Micah
  * @create: 2020-11-22 14:05
  **/
-public interface ThumbUpMapper extends BaseMapper<ThumbUp> {
+public interface UserThumbUpMapper extends BaseMapper<UserThumbUp> {
 }

@@ -1,14 +1,13 @@
-package org.mi.biz.post.controller;
+package org.mi.biz.user.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.mi.api.post.entity.ThumbUp;
-import org.mi.biz.post.service.IThumbUpService;
+import org.mi.api.user.entity.UserThumbUp;
+import org.mi.biz.user.service.IUserThumbUpService;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
 import org.mi.security.util.SecurityContextHelper;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -19,10 +18,10 @@ import java.util.Set;
  **/
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/thumbUp")
-public class ThumbUpController {
+@RequestMapping("/user/thumbUp")
+public class UserThumbUpController {
 
-    private final IThumbUpService thumbUpService;
+    private final IUserThumbUpService thumbUpService;
 
     @GetMapping
     public R<Set<Long>> listByUserId(){
@@ -32,7 +31,7 @@ public class ThumbUpController {
     }
 
     @PutMapping
-    public R<Void> thumbUp(@RequestBody ThumbUp thumbUp){
+    public R<Void> thumbUp(@RequestBody UserThumbUp thumbUp){
         AssertUtil.idIsNull(thumbUp.getUserId());
         thumbUp.setUserId(SecurityContextHelper.getUserId());
         this.thumbUpService.thumbUp(thumbUp);

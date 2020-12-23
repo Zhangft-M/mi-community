@@ -21,15 +21,18 @@ import org.mi.api.post.vo.PostVO;
 import org.mi.api.tool.api.ContentCheckRemoteApi;
 import org.mi.api.tool.entity.Checker;
 import org.mi.api.user.api.MiUserRemoteApi;
+import org.mi.api.user.api.UserCollRemoteApi;
+import org.mi.api.user.api.UserOwnPostRemoteApi;
 import org.mi.biz.post.mapper.PostMapper;
 import org.mi.biz.post.service.ICommentService;
-import org.mi.biz.post.service.IFavoritesPostService;
 import org.mi.biz.post.service.IPostService;
 import org.mi.common.core.constant.MiUserConstant;
-import org.mi.common.core.constant.ThumbUpConstant;
+import org.mi.common.core.constant.UserThumbUpConstant;
+import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.PageResult;
 import org.mi.common.core.util.RedisUtils;
+import org.mi.security.util.SecurityContextHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +49,8 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.mi.common.core.util.TextUtils.hideText;
+
 /**
  * @program: mi-community
  * @description:
@@ -59,11 +64,14 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     private final EsPostMapStruct postMapStruct;
 
-    private final IFavoritesPostService favoritesPostService;
 
     private final ContentCheckRemoteApi contentCheckRemoteApi;
 
     private final MiUserRemoteApi userRemoteApi;
+
+    private final UserOwnPostRemoteApi userOwnPostRemoteApi;
+
+    private final UserCollRemoteApi userCollRemoteApi;
 
     private ICommentService commentService;
 
@@ -81,17 +89,29 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     @Override
     public EsPost getDataById(Long id) {
         AssertUtil.idIsNotNull(id);
+        Long userId = SecurityContextHelper.getUserId();
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         SearchHit<EsPost> one = this.elasticsearchRestTemplate.searchOne(builder.withQuery(QueryBuilders.termQuery("_id", id)).build(), EsPost.class);
-        AssertUtil.notNull(one);
+        assert one != null;
+        AssertUtil.notNull(one.getContent());
+        if (one.getContent().getPoint() > 0 && one.getContent().getCategoryId().equals(2L)) {
+            // 查询数据库,看用户是否已经有阅读该贴的权限
+            Long ableReadPostId = this.userOwnPostRemoteApi.getOwnPost(id);
+            if (null == ableReadPostId) {
+                // 没有数据,判断用户是否有足够的积分阅读
+                this.userRemoteApi.updateUserPoint(0,one.getContent().getPoint(),SecurityContextHelper.getUserId());
+                this.userRemoteApi.updateUserPoint(one.getContent().getPoint(),0,one.getContent().getUserId());
+                this.userOwnPostRemoteApi.addUserOwnPost(id,one.getContent().getPoint());
+            }
+        }
         // 查询缓存，记录是否有点赞记录,当进行点赞操作的时候直接操作缓存,将数据的点赞数加一
-        Integer count = (Integer) this.redisUtils.get(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
+        Integer count = (Integer) this.redisUtils.get(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
         if (!Objects.isNull(count)) {
             // 更新数据
             one.getContent().setVoteUp(count);
         } else {
             // 保存一份缓存
-            this.redisUtils.set(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id, one.getContent().getVoteUp());
+            this.redisUtils.set(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id, one.getContent().getVoteUp());
         }
         return one.getContent();
     }
@@ -103,6 +123,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         NativeSearchQuery query = this.createQueryCriteria(criteria, pageParam);
         SearchHits<EsPost> searchResults = this.elasticsearchRestTemplate.search(query, EsPost.class);
         List<EsPost> postEntityList = searchResults.stream().map(SearchHit::getContent).collect(Collectors.toList());
+        this.dealContent(postEntityList);
         long total = searchResults.getTotalHits();
         return PageResult.of(total, postEntityList);
         // return PageResult.of(pageResult.getTotalElements(), pageResult.getContent());
@@ -221,15 +242,27 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
                 postVOList.add(postVO);
             });
         }
+        postVOList.forEach(postVO -> {
+            this.dealContent(postVO.getPostDatas());
+        });
         return postVOList;
+    }
+
+    /**
+     * 处理内容文本,将多余30个字符的文本用。。。。代替
+     * @param postDatas
+     */
+    private void dealContent(List<EsPost> postDatas) {
+        postDatas.forEach(data-> data.setContent(hideText(data.getContent())));
     }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void savePost(Post postEntity) {
         // 对内容进行校验
-        Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent()).getData();
+        Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent());
         AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
+        postEntity.setStatus(checker.getStatus());
         // 检验通过
         // TODO: 2020/11/8 通过用户的id来查询用户拥有的积分
         // .....
@@ -240,7 +273,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         // TODO: 2020/11/8 采用方案一
         // 先开启事务添加数据
         if (postEntity.insert()) {
-            this.userRemoteApi.updateUserPoint(0,postEntity.getPoint());
+            if (postEntity.getPoint() > 0 && postEntity.getCategoryId().equals(1L)) {
+                this.userRemoteApi.updateUserPoint(0, postEntity.getPoint(), postEntity.getUserId());
+            }
         }
     }
 
@@ -252,12 +287,15 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
                 .eq(Post::getId, postEntity.getId())
                 .eq(Post::getUserId, postEntity.getUserId()));
         AssertUtil.notNull(oldPost);
-        Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent()).getData();
-        AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
+        if (postEntity.getCategoryId().equals(oldPost.getCategoryId())){
+            throw new IllegalParameterException("类别不能修改哦!");
+        }
+        Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent());
+        AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规!");
         postEntity.updateById();
-        if (!oldPost.getPoint().equals(postEntity.getPoint())){
-            // 更改积分
-            this.userRemoteApi.updateUserPoint(oldPost.getPoint(), postEntity.getPoint());
+        if ((!oldPost.getPoint().equals(postEntity.getPoint())) && oldPost.getCategoryId().equals(1L)){
+            // 更改积分,只扣除提问类别的积分
+            this.userRemoteApi.updateUserPoint(oldPost.getPoint(), postEntity.getPoint(), postEntity.getUserId());
         }
     }
 
@@ -288,9 +326,10 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         return this.postMapStruct.toDto(esPostList);
     }
 
+    // TODO: 2020/12/21 未测试
     @Override
     public List<EsPostDTO> listUserFavorites(Long userId) {
-        Set<Long> results = this.favoritesPostService.listFavoritesPostId(userId);
+        Set<Long> results = this.userCollRemoteApi.listUserCollectPostId();
         if (CollUtil.isEmpty(results)) {
             return Collections.emptyList();
         }
@@ -322,4 +361,5 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         });
         this.baseMapper.delete(Wrappers.<Post>lambdaUpdate().eq(Post::getUserId,userId));
     }
+
 }

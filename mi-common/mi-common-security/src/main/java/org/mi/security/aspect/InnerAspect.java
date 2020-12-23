@@ -8,6 +8,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.mi.common.core.constant.SecurityConstant;
+import org.mi.common.core.util.RedisUtils;
 import org.mi.security.annotation.Inner;
 import org.springframework.core.Ordered;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,6 +29,8 @@ public class InnerAspect implements Ordered {
 
     private final HttpServletRequest request;
 
+    private final RedisUtils redisUtils;
+
     @Around("@annotation(inner)")
     @SneakyThrows
     public Object innerAround(ProceedingJoinPoint pjp, Inner inner){
@@ -36,7 +39,13 @@ public class InnerAspect implements Ordered {
             log.warn("访问接口 {} 没有权限", pjp.getSignature().getName());
             throw new AccessDeniedException("Access is denied");
         }
-
+        String requestCertificate = request.getHeader(SecurityConstant.INNER_REQUEST_CERTIFICATE);
+        Object certificate = this.redisUtils.get(requestCertificate);
+        if (null == certificate) {
+            log.warn("访问接口 {} 没有权限", pjp.getSignature().getName());
+            throw new AccessDeniedException("Access is denied");
+        }
+        this.redisUtils.del(requestCertificate);
         return pjp.proceed();
     }
 

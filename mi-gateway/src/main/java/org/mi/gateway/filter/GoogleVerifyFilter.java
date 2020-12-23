@@ -74,9 +74,15 @@ public class GoogleVerifyFilter extends AbstractGatewayFilterFactory<Object> {
                             } catch (Exception e) {
                                 return Mono.error(new IllegalRequestException("非法访问"));
                             }
-                            JSON loginData = (JSON) params.getByPath("loginData");
-                            exchange.getAttributes().put("loginData", loginData);
-                            return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
+                            if (StrUtil.containsIgnoreCase(requestPath,SecurityConstant.PASSWORD_LOGIN_PATH)) {
+                                JSON loginData = (JSON) params.getByPath("loginData");
+                                exchange.getAttributes().put("loginData", loginData);
+                                return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
+                            }else if (StrUtil.containsIgnoreCase(requestPath,SecurityConstant.POST_ADD_PATH)) {
+                                JSON postData = (JSON) params.getByPath("postData");
+                                return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), JSONUtil.toJsonStr(postData).getBytes(StandardCharsets.UTF_8))).build());
+                            }
+                            return chain.filter(exchange);
                         });
                     }
                 }

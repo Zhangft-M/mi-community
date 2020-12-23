@@ -99,10 +99,11 @@ public class AssertUtil {
         }
     }
 
-    public static void isAvatarPic(MultipartFile multipartFile){
+    public static void isPicture(MultipartFile multipartFile){
         String originalFilename = multipartFile.getOriginalFilename();
         assert originalFilename != null;
-        if (!originalFilename.endsWith(".jpg")){
+        Boolean type = FileUtils.checkFileType(originalFilename);
+        if (!type){
             throw new IllegalParameterException("图片只支持jpg格式");
         }
         if (!FileUtils.checkSize(1, multipartFile.getSize())){

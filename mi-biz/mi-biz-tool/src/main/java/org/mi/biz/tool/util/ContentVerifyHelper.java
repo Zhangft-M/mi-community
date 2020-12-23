@@ -1,5 +1,6 @@
 package org.mi.biz.tool.util;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -19,6 +20,7 @@ import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.C;
 import org.mi.api.tool.entity.Checker;
 import org.mi.common.core.constant.ContentCheckConstant;
@@ -305,7 +307,7 @@ public class ContentVerifyHelper {
 
     private void dealTencentTextCheckResponse(Checker checker, TextModerationResponse response) {
         TextData data = response.getData();
-        String suggestion = data.getSuggestion();
+        String suggestion = data.getSuggestion().toLowerCase();
         this.dealTencentCheckResult(checker,suggestion);
     }
 

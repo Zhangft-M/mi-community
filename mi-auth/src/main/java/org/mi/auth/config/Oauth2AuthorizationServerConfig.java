@@ -3,6 +3,7 @@ package org.mi.auth.config;
 import lombok.RequiredArgsConstructor;
 import org.mi.api.user.api.MiUserRemoteApi;
 import org.mi.auth.component.VerifyCodeTokenGranter;
+import org.mi.common.core.util.RedisUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -46,6 +47,8 @@ public class Oauth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     private final AuthenticationManager authenticationManager;
 
+    private final RedisUtils redisUtils;
+
     private final UserDetailsService userDetailsService;
 
     private final MiUserRemoteApi miUserRemoteApi;
@@ -82,8 +85,7 @@ public class Oauth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 .tokenEnhancer(tokenEnhancer)
                 // 拒绝重复使用refreshToken
                 .reuseRefreshTokens(false)
-                .tokenGranter(tokenGranter())
-                .pathMapping("/oauth/token", "/oauth/login");
+                .tokenGranter(tokenGranter());
     }
 
     @Bean
@@ -111,7 +113,7 @@ public class Oauth2AuthorizationServerConfig extends AuthorizationServerConfigur
         RefreshTokenGranter refreshTokenGranter = new RefreshTokenGranter(customTokenService(), customClientDetailsService, oAuth2RequestFactory());
         ImplicitTokenGranter implicit = new ImplicitTokenGranter(customTokenService(), customClientDetailsService, oAuth2RequestFactory());
         ClientCredentialsTokenGranter clientCredentialsTokenGranter = new ClientCredentialsTokenGranter(customTokenService(), customClientDetailsService, oAuth2RequestFactory());
-        VerifyCodeTokenGranter verifyCodeTokenGranter = new VerifyCodeTokenGranter(customTokenService(),customClientDetailsService,oAuth2RequestFactory(), miUserRemoteApi);
+        VerifyCodeTokenGranter verifyCodeTokenGranter = new VerifyCodeTokenGranter(customTokenService(),customClientDetailsService,oAuth2RequestFactory(), miUserRemoteApi, redisUtils);
         // 设置返回refresh code
         clientCredentialsTokenGranter.setAllowRefresh(true);
 

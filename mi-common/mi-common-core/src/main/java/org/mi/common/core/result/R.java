@@ -76,6 +76,13 @@ public class R<T> extends ResponseEntity<T> {
     }
 
     /**
+     * 自定义状态码
+     */
+    public static <T> R<T>success(HttpStatus status){
+        return new R<>(status);
+    }
+
+    /**
      * 200
      * @param <T>
      * @return

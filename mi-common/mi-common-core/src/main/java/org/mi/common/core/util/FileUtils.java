@@ -258,6 +258,20 @@ public class FileUtils {
     }
 
     /**
+     * 生成文件的路径
+     * @param suffix 文件后缀名
+     * @return
+     */
+    public static String createFilePath(String suffix,Long id) {
+        DateTime dateTime = new DateTime();
+        return "images/" + dateTime.toString("yyyy")
+                + "/" + dateTime.toString("MM") + "/"
+                + dateTime.toString("dd")  + "/" +
+                id + "/" + IdUtil.simpleUUID() + "." +
+                suffix;
+    }
+
+    /**
      * 校验文件的类型是否正确
      * @param originalFilename
      * @return

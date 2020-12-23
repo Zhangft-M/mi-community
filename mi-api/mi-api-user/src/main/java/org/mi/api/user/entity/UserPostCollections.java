@@ -1,4 +1,4 @@
-package org.mi.api.post.entity;
+package org.mi.api.user.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -14,9 +14,9 @@ import org.common.mp.component.BaseEntity;
  * @create: 2020-12-09 14:44
  **/
 @Data
-@TableName("mi_user_post_favorites")
+@TableName("mi_user_post_collections")
 @EqualsAndHashCode(callSuper = true)
-public class UserPostFavorites extends BaseEntity<UserPostFavorites> {
+public class UserPostCollections extends BaseEntity<UserPostCollections> {
 
     private static final long serialVersionUID = -1658434892263049530L;
 

@@ -65,4 +65,11 @@ public class CommentController {
         return R.success();
     }
 
+    @Inner
+    @PutMapping("/update/batch")
+    public R<Void> updateBatchById(List<Comment> comments){
+        this.commentService.updateBatchById(comments);
+        return R.success();
+    }
+
 }

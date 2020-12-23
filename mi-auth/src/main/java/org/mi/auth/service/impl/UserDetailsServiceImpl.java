@@ -5,6 +5,10 @@ import org.mi.api.user.api.MiUserRemoteApi;
 import org.mi.api.user.entity.MiRole;
 import org.mi.api.user.entity.MiUser;
 import org.mi.auth.model.MiUserInfo;
+import org.mi.common.core.constant.RedisCacheConstant;
+import org.mi.common.core.constant.SecurityConstant;
+import org.mi.common.core.util.RedisUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +21,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -31,19 +37,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final MiUserRemoteApi miUserRemoteApi;
 
+    private final RedisUtils redisUtils;
+
     @Override
     public UserDetails loadUserByUsername(String certificate) throws UsernameNotFoundException {
-        MiUser user = this.miUserRemoteApi.loadUserByUsername(certificate, 0,"Y").getBody();
+        String requestCredentials = UUID.randomUUID().toString();
+        this.redisUtils.set(requestCredentials,requestCredentials,30, TimeUnit.MINUTES);
+        MiUser user = this.miUserRemoteApi.loadUserByUsername(certificate, 0, SecurityConstant.FROM_IN,requestCredentials).getBody();
         if (user == null){
             throw new IllegalArgumentException("该用户名未注册,请先注册");
         }
         Set<String> collect = user.getRoles().stream().map(MiRole::getRoleName).collect(Collectors.toSet());
         List<GrantedAuthority> authorityList = AuthorityUtils.createAuthorityList(collect.toArray(collect.toArray(new String[0])));
-        MiUserInfo miUserInfo = new MiUserInfo(user.getId(), certificate, user.getPassword(), !user.getHasDelete(), true, true, user.getStatus(), authorityList);
-        /*SimpleGrantedAuthority admin = new SimpleGrantedAuthority("admin");
-        List<GrantedAuthority> list = new ArrayList<>();
-        list.add(admin);
-        return new User("admin", "$2a$10$9CZaQm4CuZiojaYRJ2dLEu87FGGJj2Q9V6mubZDVt1sT3wPD3LULK", list);*/
-        return miUserInfo;
+        return new MiUserInfo(user.getId(), certificate, user.getPassword(), !user.getHasDelete(), true, true, user.getStatus(), authorityList);
     }
 }

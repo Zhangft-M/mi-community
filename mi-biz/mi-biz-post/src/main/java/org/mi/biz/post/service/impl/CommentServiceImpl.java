@@ -25,9 +25,8 @@ import org.mi.biz.post.mapper.CommentMapper;
 import org.mi.biz.post.service.ICommentService;
 import org.mi.biz.post.service.IPostService;
 import org.mi.common.core.constant.EmailConstant;
-import org.mi.common.core.constant.ThumbUpConstant;
+import org.mi.common.core.constant.UserThumbUpConstant;
 import org.mi.common.core.exception.IllegalOperationException;
-import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.SmsSendFailException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.util.RedisUtils;
@@ -36,7 +35,6 @@ import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,12 +81,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         SearchHits<EsComment> result = this.elasticsearchRestTemplate.search(query, EsComment.class);
         List<CommentTree> commentList = result.stream().map(
                 data -> {
-                    Integer voteUpCount = (Integer) this.redisUtils.get(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId());
+                    Integer voteUpCount = (Integer) this.redisUtils.get(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId());
                     if (!Objects.isNull(voteUpCount)) {
                         // 命中缓存，更新一下点赞数
                         data.getContent().setVoteUp(voteUpCount);
                     } else {
-                        this.redisUtils.set(ThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId(), data.getContent().getVoteUp());
+                        this.redisUtils.set(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId(), data.getContent().getVoteUp());
                     }
                     return this.commentMapStruct.toDto(data.getContent());
                 }).sorted(Comparator.comparingInt(CommentTree::getVoteUp).reversed()).collect(Collectors.toList());
@@ -116,7 +114,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             comment.setParentId(0L);
         }
         String content = comment.getContent();
-        Checker checker = this.contentCheckRemoteApi.checkTxt(content).getData();
+        Checker checker = this.contentCheckRemoteApi.checkTxt(content);
         AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
         if (comment.insert()) {
             // 审核通过的，直接从索引库查找并返回数据

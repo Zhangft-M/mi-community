@@ -39,7 +39,7 @@ public class PostController {
         return R.success(result);
     }
 
-    @Anonymous
+
     @GetMapping("{id}")
     public R<EsPost> getById(@PathVariable Long id){
         EsPost result = this.postService.getDataById(id);
@@ -53,7 +53,7 @@ public class PostController {
         return R.success(result);
     }
 
-    @PostMapping
+    @PostMapping("/add")
     public R<Void> save(@RequestBody Post postEntity){
         AssertUtil.idsIsNull(postEntity.getId(), postEntity.getUserId());
         setUserId(postEntity);
@@ -98,5 +98,13 @@ public class PostController {
     public R<List<EsPostDTO>> listUserFavorites(@PathVariable Long userId){
         List<EsPostDTO> esPostDTOS = this.postService.listUserFavorites(userId);
         return R.success(esPostDTOS);
+    }
+
+
+    @Inner
+    @PutMapping("/update/batch")
+    public R<Void> updateBatchById(List<Post> datas){
+        this.postService.updateBatchById(datas);
+        return R.success();
     }
 }

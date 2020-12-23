@@ -8,8 +8,10 @@ import org.mi.api.user.dto.MiUserDTO;
 import org.mi.api.user.entity.MiUser;
 import org.mi.biz.user.service.IMiUserService;
 import org.mi.common.core.constant.MiUserConstant;
+import org.mi.common.core.constant.RedisCacheConstant;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
+import org.mi.common.core.util.RedisUtils;
 import org.mi.security.annotation.Anonymous;
 import org.mi.security.annotation.Inner;
 import org.mi.security.util.SecurityContextHelper;
@@ -33,6 +35,8 @@ public class MiUserController {
 
     private final IMiUserService miUserService;
 
+    private final RedisUtils redisUtils;
+
 
 
 
@@ -43,8 +47,8 @@ public class MiUserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/info/{userId}")
-    public R<MiUserDTO> getUserInfo(@PathVariable Long userId){
+    @GetMapping("/info")
+    public R<MiUserDTO> getUserInfo(@RequestParam(required = false) Long userId){
         if (userId == null){
             userId = SecurityContextHelper.getUserId();
         }
@@ -63,9 +67,17 @@ public class MiUserController {
     @PutMapping
     public R<Void> updateLoginInfo(@RequestBody Map<String,Object> loginInfo){
         MiUser miUser = BeanUtil.mapToBean(loginInfo, MiUser.class, true);
-        miUser.setId(Long.valueOf(loginInfo.get(MiUserConstant.USER_ID).toString()));
-        AssertUtil.notNull(miUser.getId(),miUser.getLastLoginIp(),miUser.getLastLoginTime());
-        if (miUser.updateById()) {
+        AssertUtil.notNull(miUser.getLastLoginIp(),miUser.getLastLoginTime());
+        MiUser oldUser = this.miUserService.getById(Long.valueOf(loginInfo.get(MiUserConstant.USER_ID).toString()));
+        AssertUtil.notNull(oldUser);
+        boolean hasLogin = this.redisUtils.hasKey(RedisCacheConstant.USER_TODAY_HAS_LOGIN + oldUser.getId());
+        if (!hasLogin) {
+            oldUser.setPoint(oldUser.getPoint() + 10);
+            this.redisUtils.set(RedisCacheConstant.USER_TODAY_HAS_LOGIN + oldUser.getId(),oldUser.getLastLoginIp());
+        }
+        oldUser.setLastLoginIp(miUser.getLastLoginIp());
+        oldUser.setLastLoginTime(miUser.getLastLoginTime());
+        if (oldUser.updateById()) {
             return R.success();
         }
         return R.fail();
@@ -86,9 +98,12 @@ public class MiUserController {
      * @param newPoint/
      * @return
      */
+    @Inner
     @PutMapping("point")
-    public R<Void> updateUserPoint(Integer oldPoint,Integer newPoint){
-        Long userId = SecurityContextHelper.getUserId();
+    public R<Void> updateUserPoint(Integer oldPoint,Integer newPoint,Long userId){
+        if (userId == null) {
+            userId = SecurityContextHelper.getUserId();
+        }
         this.miUserService.updateUserPoint(oldPoint,newPoint,userId);
         return R.success();
     }

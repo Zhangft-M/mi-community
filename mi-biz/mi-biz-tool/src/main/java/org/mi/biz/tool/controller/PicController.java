@@ -24,15 +24,23 @@ public class PicController {
 
     private final IPicService picService;
 
-    @Anonymous
     @PostMapping("upload")
     public R<String> uploadAvatarPic(@RequestParam("avatar") MultipartFile multipartFile){
-        AssertUtil.isAvatarPic(multipartFile);
-        // Long userId = SecurityContextHelper.getUserId();
-        return R.success(this.picService.uploadAvatarPic(multipartFile,0L));
+        AssertUtil.isPicture(multipartFile);
+        Long userId = SecurityContextHelper.getUserId();
+        return R.success(this.picService.uploadAvatarPic(multipartFile,userId));
     }
 
-    @Anonymous
+
+    @PostMapping("/upload/base64")
+    public R<String> uploadPostPic(@RequestParam("postImage") MultipartFile multipartFile){
+        AssertUtil.isPicture(multipartFile);
+        Long userId = SecurityContextHelper.getUserId();
+        String url = this.picService.uploadPostPic(multipartFile,userId);
+        return R.success(url);
+    }
+
+
     @GetMapping
     public R<Void> exceptionTest(){
         throw new IllegalParameterException("参数不合法");

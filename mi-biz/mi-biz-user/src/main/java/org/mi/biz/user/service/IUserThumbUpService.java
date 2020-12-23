@@ -1,9 +1,8 @@
-package org.mi.biz.post.service;
+package org.mi.biz.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.mi.api.post.entity.ThumbUp;
+import org.mi.api.user.entity.UserThumbUp;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -12,12 +11,12 @@ import java.util.Set;
  * @author: Micah
  * @create: 2020-11-22 18:16
  **/
-public interface IThumbUpService extends IService<ThumbUp> {
+public interface IUserThumbUpService extends IService<UserThumbUp> {
     /**
      * 点赞操作
      * @param thumbUp /
      */
-    void thumbUp(ThumbUp thumbUp);
+    void thumbUp(UserThumbUp thumbUp);
 
     /**
      * 通过用户的id查询

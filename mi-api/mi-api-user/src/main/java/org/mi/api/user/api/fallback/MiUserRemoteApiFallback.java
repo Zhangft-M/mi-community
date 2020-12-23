@@ -20,8 +20,9 @@ import java.util.Map;
 @Component
 public class MiUserRemoteApiFallback implements MiUserRemoteApi {
 
+
     @Override
-    public ResponseEntity<MiUser> loadUserByUsername(String certificate, Integer type, String from) {
+    public ResponseEntity<MiUser> loadUserByUsername(String certificate, Integer type, String from, String innerRequestCertificate) {
         return null;
     }
 
@@ -35,8 +36,10 @@ public class MiUserRemoteApiFallback implements MiUserRemoteApi {
     }
 
     @Override
-    public void updateUserPoint(Integer oldPoint,Integer newPoint) {
+    public void updateUserPoint(Integer oldPoint, Integer newPoint, Long userId) {
+
     }
+
 
     @Override
     public MiUserDTO getUserInfo(Long userId) {
