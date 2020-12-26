@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserOwnPostRemoteApiFallback implements UserOwnPostRemoteApi {
     @Override
-    public void addUserOwnPost(Long postId, Integer point) {
+    public void addUserOwnPost(Long userId, Long postId, Integer point, String from) {
 
     }
 

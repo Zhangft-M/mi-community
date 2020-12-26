@@ -27,7 +27,7 @@ public class EsPost implements Serializable {
     private static final long serialVersionUID = 827005331631540310L;
 
     @Id
-    @Field(value = "_id")
+    @Field(value = "_id",docValues = true)
     private Long id;
 
     @Field(value = "category_id")

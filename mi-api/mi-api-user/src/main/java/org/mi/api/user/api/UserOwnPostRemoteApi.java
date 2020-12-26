@@ -6,6 +6,7 @@ import org.mi.api.user.entity.UserOwnPost;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Optional;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public interface UserOwnPostRemoteApi {
 
     @PostMapping("/user/own/post")
-    void addUserOwnPost(@RequestParam Long postId, @RequestParam Integer point);
+    void addUserOwnPost(@RequestParam Long userId,@RequestParam Long postId, @RequestParam Integer point,@RequestHeader("from") String from);
 
     @GetMapping("/user/own/post")
     Long getOwnPost(@RequestParam Long postId);

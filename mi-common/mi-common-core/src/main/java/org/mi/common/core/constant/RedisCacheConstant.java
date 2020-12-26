@@ -24,4 +24,6 @@ public interface RedisCacheConstant {
 
     String USER_TODAY_HAS_LOGIN = "user:today:has:login:";
 
+    String USER_OWN_POST_ID = "user:own::post:::userId::::";
+
 }

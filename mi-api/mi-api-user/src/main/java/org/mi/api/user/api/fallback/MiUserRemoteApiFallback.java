@@ -36,10 +36,9 @@ public class MiUserRemoteApiFallback implements MiUserRemoteApi {
     }
 
     @Override
-    public void updateUserPoint(Integer oldPoint, Integer newPoint, Long userId) {
+    public void updateUserPoint(Integer oldPoint, Integer newPoint, Long userId, String from) {
 
     }
-
 
     @Override
     public MiUserDTO getUserInfo(Long userId) {

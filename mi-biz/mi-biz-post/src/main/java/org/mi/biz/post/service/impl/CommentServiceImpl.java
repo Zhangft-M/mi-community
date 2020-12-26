@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -40,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -91,17 +93,22 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     return this.commentMapStruct.toDto(data.getContent());
                 }).sorted(Comparator.comparingInt(CommentTree::getVoteUp).reversed()).collect(Collectors.toList());
         List<CommentTree> commentTree = this.createCommentTree(commentList);
-        commentTree.forEach(data -> {
-            secondFloorData = Lists.newCopyOnWriteArrayList();
-            this.getSecondFloorTree(data, data.getId());
+        for (CommentTree data : commentTree) {
+            if (data.getChildren() != null) {
+                secondFloorData = Lists.newCopyOnWriteArrayList();
+                this.getSecondFloorTree(data, data.getId());
+            }
             if (CollUtil.isNotEmpty(secondFloorData)) {
-                data.getChildren().clear();
+                if (CollUtil.isNotEmpty(data.getChildren())) {
+                    data.getChildren().clear();
+                }
                 data.setChildren(secondFloorData);
             }
-        });
+        }
         return commentTree;
     }
 
+    @SneakyThrows
     @Override
     public CommentTree insertComment(Comment comment) {
         Comment parentComment = null;
@@ -116,17 +123,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         String content = comment.getContent();
         Checker checker = this.contentCheckRemoteApi.checkTxt(content);
         AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
+        comment.setStatus(checker.getStatus());
         if (comment.insert()) {
             // 审核通过的，直接从索引库查找并返回数据
-            EsComment esComment = this.elasticsearchRestTemplate.get(String.valueOf(comment.getId()), EsComment.class);
+            // 防止数据同步不及时,没有获取到数据
+            AtomicInteger atomicInteger = new AtomicInteger(3);
+            EsComment esComment = null;
+            do {
+                esComment = this.elasticsearchRestTemplate.get(String.valueOf(comment.getId()), EsComment.class);
+                if (esComment != null) {
+                    atomicInteger.set(0);
+                }else {
+                    atomicInteger.decrementAndGet();
+                }
+            }while (esComment == null || atomicInteger.get() != 0);
             // 判断用户是否接收回复邮件提醒,如果接收则发送邮件,否侧不发
-            if (null != esComment) {
                 // 发送帖子回复
                 this.sendPostReplyEmail(esComment);
                 // 发送评论回复
                 this.senCommentReplyEmail(esComment,parentComment);
-            }
-
+            CommentTree commentTree = this.commentMapStruct.toDto(esComment);
             return Optional.ofNullable(this.commentMapStruct.toDto(esComment)).orElseGet(CommentTree::new);
         }
         return null;
@@ -139,13 +155,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @param parentComment
      */
     private void senCommentReplyEmail(EsComment esComment, Comment parentComment) {
-        if (!esComment.getReceiveReply()) {
+        if (esComment.getParentId().equals(0L)) {
             return;
         }
-        if (esComment.getParentId() == 0){
-            return;
-        }
-        if (null == parentComment) {
+        if (!parentComment.getReceiveReply()) {
             return;
         }
         // 远程查找用户的信息
@@ -168,7 +181,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
             @Override
             public void onException(Throwable e) {
-                log.error("发送失败");
+                log.error("发送失败e=>{}",e.toString());
                 throw new SmsSendFailException("邮件发送失败");
             }
         });
@@ -181,6 +194,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     private void sendPostReplyEmail(EsComment comment) {
         // 通过postId查找用户的信息
+        // 如果有parentId则不是评论的子节点,不用回复
         if (comment.getParentId() != 0){
             return;
         }
@@ -259,8 +273,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @return
      */
     private List<CommentTree> createCommentTree(List<CommentTree> commentList) {
-        Map<String, List<CommentTree>> map = new HashMap<>();
-        List<CommentTree> trees = new ArrayList<>();
+        List<CommentTree> trees = Lists.newCopyOnWriteArrayList();
         for (CommentTree commentTree : commentList) {
             if (commentTree.getParentId().equals(0L)) {
                 trees.add(commentTree);

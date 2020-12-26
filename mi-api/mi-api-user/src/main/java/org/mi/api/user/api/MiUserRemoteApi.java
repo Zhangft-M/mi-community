@@ -52,8 +52,8 @@ public interface MiUserRemoteApi {
      */
     @PutMapping("/user/point")
     void updateUserPoint(@RequestParam Integer oldPoint,@RequestParam Integer newPoint,
-                         @RequestParam("userId") Long userId);
+                         @RequestParam("userId") Long userId,@RequestHeader("from") String from);
 
-    @GetMapping("/info/{userId}")
-    MiUserDTO getUserInfo(@PathVariable("userId") Long userId);
+    @GetMapping("/user/info")
+    MiUserDTO getUserInfo(@RequestParam("userId") Long userId);
 }

@@ -21,4 +21,6 @@ public interface MiUserConstant {
     String PHONE_NUMBER = "phoneNumber";
 
     String VERIFY_CODE = "verifyCode";
+
+    String REGISTER_PARAM = "registerParam";
 }

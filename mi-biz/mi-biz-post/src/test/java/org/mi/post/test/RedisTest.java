@@ -26,4 +26,10 @@ public class RedisTest {
         Object o = this.redisUtils.get(RedisCacheConstant.VERIFY_CODE_PREFIX + "18986233587");
         System.out.println(o);
     }
+
+    @Test
+    public void sIsMember(){
+        Boolean isMember = this.redisUtils.sIsMember(RedisCacheConstant.USER_OWN_POST_ID + 1, 539915499476365312L);
+        System.out.println(isMember);
+    }
 }

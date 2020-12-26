@@ -8,7 +8,7 @@ spring:
     username: root
     password: weihanhan1005
     hikari:
-      max-lifetime: 600000
+      max-lifetime: 400000
   redis:
     cluster:
       nodes:

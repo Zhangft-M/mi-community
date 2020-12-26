@@ -10,9 +10,9 @@ import org.springframework.data.repository.util.TxUtils;
  **/
 public class TextUtils {
 
-    private static final int MAX_LENGTH = 30;
+    private static final int MAX_LENGTH = 40;
 
-    private static final String REPLACE_STR = "......";
+    private static final String REPLACE_STR = "......</p>";
 
     /**
      * 隐藏过多的文本内容

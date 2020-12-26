@@ -1,17 +1,21 @@
 package org.mi.biz.post.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.escape.Html4Escape;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.common.mp.annotation.Query;
 import org.common.mp.util.QueryUtils;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.*;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.mi.api.post.dto.EsPostDTO;
 import org.mi.api.post.entity.EsPost;
 import org.mi.api.post.entity.Post;
@@ -27,6 +31,8 @@ import org.mi.biz.post.mapper.PostMapper;
 import org.mi.biz.post.service.ICommentService;
 import org.mi.biz.post.service.IPostService;
 import org.mi.common.core.constant.MiUserConstant;
+import org.mi.common.core.constant.RedisCacheConstant;
+import org.mi.common.core.constant.SecurityConstant;
 import org.mi.common.core.constant.UserThumbUpConstant;
 import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.util.AssertUtil;
@@ -42,11 +48,17 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.tags.HtmlEscapeTag;
+import org.springframework.web.servlet.tags.HtmlEscapingAwareTag;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.mi.common.core.util.TextUtils.hideText;
@@ -81,6 +93,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     private static final Boolean IS_RECOMMEND = true;
 
+    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(3,5,5000, TimeUnit.MILLISECONDS,new LinkedBlockingDeque<>()
+            ,new CustomizableThreadFactory("post-deal-thread-"));
+
     @Autowired
     public void setCommentService(ICommentService commentService) {
         this.commentService = commentService;
@@ -89,20 +104,24 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     @Override
     public EsPost getDataById(Long id) {
         AssertUtil.idIsNotNull(id);
-        Long userId = SecurityContextHelper.getUserId();
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         SearchHit<EsPost> one = this.elasticsearchRestTemplate.searchOne(builder.withQuery(QueryBuilders.termQuery("_id", id)).build(), EsPost.class);
         assert one != null;
         AssertUtil.notNull(one.getContent());
         if (one.getContent().getPoint() > 0 && one.getContent().getCategoryId().equals(2L)) {
             // 查询数据库,看用户是否已经有阅读该贴的权限
-            Long ableReadPostId = this.userOwnPostRemoteApi.getOwnPost(id);
-            if (null == ableReadPostId) {
-                // 没有数据,判断用户是否有足够的积分阅读
-                this.userRemoteApi.updateUserPoint(0,one.getContent().getPoint(),SecurityContextHelper.getUserId());
-                this.userRemoteApi.updateUserPoint(one.getContent().getPoint(),0,one.getContent().getUserId());
-                this.userOwnPostRemoteApi.addUserOwnPost(id,one.getContent().getPoint());
+            Long userId = SecurityContextHelper.getUserId();
+            Boolean isMember = this.redisUtils.sIsMember(RedisCacheConstant.USER_OWN_POST_ID + userId, id);
+            if (!isMember) {
+                // TODO: 2020/12/25 需解决分布式事务问题 ,无法避免
+                // 没有数据,判断用户是否有足够的积分阅读,如果有则扣除
+                this.userRemoteApi.updateUserPoint(0, one.getContent().getPoint(), userId, SecurityConstant.FROM_IN);
+                // 给作者加积分
+                this.userRemoteApi.updateUserPoint(one.getContent().getPoint(), 0, one.getContent().getUserId(), SecurityConstant.FROM_IN);
+                // 保存一份用户已经拥有阅读权限的数据
+                this.userOwnPostRemoteApi.addUserOwnPost(userId, id, one.getContent().getPoint(), SecurityConstant.FROM_IN);
             }
+
         }
         // 查询缓存，记录是否有点赞记录,当进行点赞操作的时候直接操作缓存,将数据的点赞数加一
         Integer count = (Integer) this.redisUtils.get(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
@@ -250,10 +269,11 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     /**
      * 处理内容文本,将多余30个字符的文本用。。。。代替
+     *
      * @param postDatas
      */
     private void dealContent(List<EsPost> postDatas) {
-        postDatas.forEach(data-> data.setContent(hideText(data.getContent())));
+        postDatas.forEach(data -> data.setContent(hideText(data.getContent())));
     }
 
     @Override
@@ -263,6 +283,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent());
         AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规");
         postEntity.setStatus(checker.getStatus());
+        // 编码html防止xss攻击
+        String cleanedContent = Jsoup.clean(postEntity.getContent(), Whitelist.basicWithImages());
+        postEntity.setContent(cleanedContent);
         // 检验通过
         // TODO: 2020/11/8 通过用户的id来查询用户拥有的积分
         // .....
@@ -273,8 +296,11 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         // TODO: 2020/11/8 采用方案一
         // 先开启事务添加数据
         if (postEntity.insert()) {
+            executor.execute(()->{
+                this.userOwnPostRemoteApi.addUserOwnPost(postEntity.getUserId(), postEntity.getId(), postEntity.getPoint(), SecurityConstant.FROM_IN);
+            });
             if (postEntity.getPoint() > 0 && postEntity.getCategoryId().equals(1L)) {
-                this.userRemoteApi.updateUserPoint(0, postEntity.getPoint(), postEntity.getUserId());
+                this.userRemoteApi.updateUserPoint(0, postEntity.getPoint(), postEntity.getUserId(), SecurityConstant.FROM_IN);
             }
         }
     }
@@ -287,15 +313,15 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
                 .eq(Post::getId, postEntity.getId())
                 .eq(Post::getUserId, postEntity.getUserId()));
         AssertUtil.notNull(oldPost);
-        if (postEntity.getCategoryId().equals(oldPost.getCategoryId())){
+        if (postEntity.getCategoryId().equals(oldPost.getCategoryId())) {
             throw new IllegalParameterException("类别不能修改哦!");
         }
         Checker checker = this.contentCheckRemoteApi.checkTxt(postEntity.getTitle() + postEntity.getContent());
         AssertUtil.statusIsTrue(checker.getStatus(), "内容涉嫌违规!");
         postEntity.updateById();
-        if ((!oldPost.getPoint().equals(postEntity.getPoint())) && oldPost.getCategoryId().equals(1L)){
+        if ((!oldPost.getPoint().equals(postEntity.getPoint())) && oldPost.getCategoryId().equals(1L)) {
             // 更改积分,只扣除提问类别的积分
-            this.userRemoteApi.updateUserPoint(oldPost.getPoint(), postEntity.getPoint(), postEntity.getUserId());
+            this.userRemoteApi.updateUserPoint(oldPost.getPoint(), postEntity.getPoint(), postEntity.getUserId(), SecurityConstant.FROM_IN);
         }
     }
 
@@ -305,10 +331,10 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         AssertUtil.collectionsIsNotNull(ids);
         //
         // TODO: 2020/11/8 通过用户的id和帖子的Id删除帖子,保证数据的准确性
-        ids.forEach(id->{
+        ids.forEach(id -> {
             this.baseMapper.delete(Wrappers.<Post>lambdaUpdate()
-                    .eq(Post::getId,id)
-                    .eq(Post::getUserId,userId));
+                    .eq(Post::getId, id)
+                    .eq(Post::getUserId, userId));
         });
     }
 
@@ -353,13 +379,13 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     @Transactional(rollbackFor = Exception.class)
     public void deletePostByUserId(Long userId) {
         List<Post> posts = this.baseMapper.selectList(Wrappers.<Post>lambdaQuery().eq(Post::getUserId, userId));
-        if (CollUtil.isEmpty(posts)){
+        if (CollUtil.isEmpty(posts)) {
             return;
         }
         posts.forEach(post -> {
             this.commentService.deleteCommentByPostId(post.getId());
         });
-        this.baseMapper.delete(Wrappers.<Post>lambdaUpdate().eq(Post::getUserId,userId));
+        this.baseMapper.delete(Wrappers.<Post>lambdaUpdate().eq(Post::getUserId, userId));
     }
 
 }

@@ -56,11 +56,6 @@ public class PhoneVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> 
     private final StringRedisTemplate redisTemplate;
 
 
-
-
-
-
-
     @Override
     public GatewayFilter apply(Object config) {
         return new GatewayFilter() {

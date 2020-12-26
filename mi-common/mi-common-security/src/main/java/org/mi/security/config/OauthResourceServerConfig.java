@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.web.cors.CorsUtils;
 
 /**
  * @program: mi-community
@@ -47,6 +48,7 @@ public class OauthResourceServerConfig extends ResourceServerConfigurerAdapter {
         // 前后端分离下，可以关闭 csrf
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
         permitUrls.getUrls().forEach(url -> registry.antMatchers(url).permitAll());
+        registry.requestMatchers(CorsUtils::isPreFlightRequest).permitAll();
         registry.anyRequest().authenticated()
                 .and().csrf().disable();
     }

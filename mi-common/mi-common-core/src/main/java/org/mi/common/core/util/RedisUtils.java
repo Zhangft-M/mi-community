@@ -432,6 +432,15 @@ public class RedisUtils {
         }
     }
 
+    public Boolean sIsMember(String key,Object val) {
+        try {
+            return redisTemplate.opsForSet().isMember(key,val);
+        }catch (Exception e) {
+            log.error(e.getMessage(),e);
+            return false;
+        }
+    }
+
     /**
      * 根据value从一个set中查询,是否存在
      *

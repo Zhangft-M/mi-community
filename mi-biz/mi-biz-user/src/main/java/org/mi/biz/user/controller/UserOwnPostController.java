@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.mi.api.user.entity.UserOwnPost;
+import org.mi.common.core.constant.RedisCacheConstant;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
+import org.mi.common.core.util.RedisUtils;
 import org.mi.security.annotation.Inner;
 import org.mi.security.util.SecurityContextHelper;
 import org.springframework.web.bind.annotation.*;
@@ -24,27 +26,38 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserOwnPostController {
 
+    private final RedisUtils redisUtils;
+
     @GetMapping
-    public R<Long> getOwnPost(@RequestParam Long postId){
+    public R<Boolean> getOwnPost(@RequestParam Long postId){
         Long userId = SecurityContextHelper.getUserId();
+        Boolean isMember = this.redisUtils.sIsMember(RedisCacheConstant.USER_OWN_POST_ID + userId, String.valueOf(postId));
+        if (isMember) {
+            return R.success(Boolean.TRUE);
+        }
         UserOwnPost userOwnPost = new UserOwnPost();
         userOwnPost.setPostId(postId);
         userOwnPost.setUserId(userId);
-        UserOwnPost result = userOwnPost.selectOne(Wrappers.lambdaQuery(userOwnPost));
-        return R.success(Optional.ofNullable(result.getPostId()).orElse(null));
+        UserOwnPost result = userOwnPost.selectOne(Wrappers.<UserOwnPost>lambdaQuery()
+                .eq(UserOwnPost::getUserId,userId)
+                .eq(UserOwnPost::getPostId,postId));
+        if (result != null) {
+            this.redisUtils.sAdd(RedisCacheConstant.USER_OWN_POST_ID + userId,postId);
+            return R.success(Boolean.TRUE);
+        }
+        return R.success(Boolean.FALSE);
     }
 
     @Inner
     @PostMapping
-    public R<Void> addUserOwnPost(@RequestParam Long postId, @RequestParam Integer point){
+    public R<Void> addUserOwnPost(@RequestParam Long userId,@RequestParam Long postId, @RequestParam Integer point){
         AssertUtil.notNull(postId,point);
         UserOwnPost userOwnPost = new UserOwnPost();
-        userOwnPost.setUserId(SecurityContextHelper.getUserId());
+        userOwnPost.setUserId(userId);
         userOwnPost.setPostId(postId);
         userOwnPost.setUsePoint(point);
         userOwnPost.insert();
         return R.success();
-
     }
 
 }
