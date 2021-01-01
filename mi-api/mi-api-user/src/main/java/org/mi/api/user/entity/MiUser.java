@@ -38,7 +38,7 @@ public class MiUser extends BaseEntity<MiUser> {
 
     private String password;
 
-    private String phone;
+    private String phoneNumber;
 
     @Email
     private String email;

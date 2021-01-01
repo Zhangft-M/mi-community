@@ -66,7 +66,7 @@ public class PostController {
         postEntity.setUserId(userId);
     }
 
-    @PutMapping
+    @PutMapping()
     public R<Void> update(@RequestBody Post postEntity){
         AssertUtil.idIsNotNull(postEntity.getId());
         this.setUserId(postEntity);

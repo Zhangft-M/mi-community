@@ -19,8 +19,8 @@ public class CommonTest {
 
     private static Boolean a = true;
 
-    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(3,5,5000, TimeUnit.MILLISECONDS,new LinkedBlockingDeque<>()
-            ,new CustomizableThreadFactory("post-deal-thread-"));
+    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(3, 5, 5000, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>()
+            , new CustomizableThreadFactory("post-deal-thread-"));
 
     public static void main(String[] args) throws NoSuchFieldException {
 
@@ -29,17 +29,22 @@ public class CommonTest {
 
     @Test
     public void threadTest() throws InterruptedException {
-        this.executor.execute(()->{
-            for (int i = 0; i < 50; i++) {
-                System.out.println("子线程打印" + i);
-                if (i == 25) {
-                    throw new RuntimeException("进程异常测试");
+        int count = 0;
+        this.executor.execute(() -> {
+            for (int j = 0; j < 5; j++) {
+                try {
+                    System.out.println(Thread.currentThread().getName() + j);
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+
             }
         });
-        for (int i = 0; i < 100; i++) {
-            System.out.println("主线程打印:" + i);
-            Thread.sleep(1000);
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(2000);
+            System.out.println(Thread.currentThread().getName() + i);
         }
+
     }
 }

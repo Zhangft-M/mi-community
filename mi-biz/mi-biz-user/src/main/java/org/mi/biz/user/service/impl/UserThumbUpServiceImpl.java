@@ -41,7 +41,9 @@ public class UserThumbUpServiceImpl extends ServiceImpl<UserThumbUpMapper,UserTh
                 this.redisUtils.sAdd(UserThumbUpConstant.USER_THUMB_UP_CONTENT_PREFIX + thumbUp.getUserId(), thumbUp.getContentId());
             }
             // 在redis中将对应的内容的点赞的值加1或者减1
-            this.redisUtils.incrementValue(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + thumbUp.getContentId(), type.longValue());
+            this.redisUtils.hincr(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX,
+                    String.valueOf(thumbUp.getContentId()),Long.valueOf(type));
+            // this.redisUtils.incrementValue(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + thumbUp.getContentId(), type.longValue());
             return;
         }
         throw new IllegalParameterException("传递的参数应该为-1或者为1");
@@ -52,7 +54,7 @@ public class UserThumbUpServiceImpl extends ServiceImpl<UserThumbUpMapper,UserTh
         Set<Object> list = this.redisUtils.sGet(UserThumbUpConstant.USER_THUMB_UP_CONTENT_PREFIX + userId);
         Set<Long> results = Sets.newConcurrentHashSet();
         if (CollUtil.isNotEmpty(list)) {
-            results.addAll(list.stream().map(data -> (Long) data).collect(Collectors.toSet()));
+            results.addAll(list.stream().map(data -> Long.valueOf(String.valueOf(data))).collect(Collectors.toSet()));
         } else {
             List<UserThumbUp> thumbUps = this.baseMapper.selectList(Wrappers.<UserThumbUp>lambdaQuery()
                     .eq(UserThumbUp::getUserId, userId)

@@ -23,4 +23,9 @@ public class contentCheckRemoteApiFallback implements ContentCheckRemoteApi {
     public Checker checkPic(String url) {
         return null;
     }
+
+    @Override
+    public Checker checkTxtWithoutUserId(String content, String from) {
+        return null;
+    }
 }

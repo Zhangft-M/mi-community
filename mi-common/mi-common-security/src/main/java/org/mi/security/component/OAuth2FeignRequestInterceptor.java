@@ -32,7 +32,7 @@ public class OAuth2FeignRequestInterceptor implements RequestInterceptor {
             // 使用了Inner注解，直接放行
             // 在请求头中添加唯一的请求凭证
             String requestCertificate = UUID.randomUUID().toString();
-            this.redisUtils.set(requestCertificate,requestCertificate,30, TimeUnit.MINUTES);
+            this.redisUtils.set(requestCertificate,requestCertificate,15, TimeUnit.MINUTES);
             requestTemplate.header(SecurityConstant.INNER_REQUEST_CERTIFICATE,requestCertificate);
             return;
         }

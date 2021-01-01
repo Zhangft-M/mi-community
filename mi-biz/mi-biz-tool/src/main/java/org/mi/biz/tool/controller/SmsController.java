@@ -1,9 +1,12 @@
 package org.mi.biz.tool.controller;
 
+import cn.hutool.extra.mail.MailUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.checkerframework.checker.regex.RegexUtil;
 import org.mi.api.tool.dto.EmailDTO;
 import org.mi.common.core.constant.EmailConstant;
 import org.mi.common.core.constant.RedisCacheConstant;

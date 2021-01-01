@@ -23,4 +23,6 @@ public interface MiUserConstant {
     String VERIFY_CODE = "verifyCode";
 
     String REGISTER_PARAM = "registerParam";
+
+    String NICK_NAME = "nickName";
 }

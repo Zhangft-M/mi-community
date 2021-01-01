@@ -66,7 +66,7 @@ public class EsPost implements Serializable {
     private Boolean status;
 
     @Field(value = "view_count")
-    private Integer viewCount;
+    private Long viewCount;
 
     private Integer point;
 

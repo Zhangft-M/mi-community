@@ -137,11 +137,13 @@ public class ContentVerifyHelper {
                 break;
             case ContentCheckConstant.REVIEW:
                 checker.setStatus(false);
-                checker.insert();
+                if (null != checker.getUserId()) {
+                    checker.insert();
+                }
                 throw new ContentNotSaveException("内容涉嫌违规,人工审核中");
             case ContentCheckConstant.BLOCK:
                 checker.setHasDelete(true);
-                 throw new ContentNotSaveException("内容涉嫌违规,请修改");
+                throw new ContentNotSaveException("内容涉嫌违规,请修改");
             default:
                 break;
         }
@@ -208,10 +210,12 @@ public class ContentVerifyHelper {
      */
     private TextModerationRequest textModerationRequest(String content,Long userId){
         TextModerationRequest req = new TextModerationRequest();
-        User user = new User();
-        user.setUserId(String.valueOf(userId));
-        user.setAccountType(7L);
-        req.setUser(user);
+        if (null != userId) {
+            User user = new User();
+            user.setUserId(String.valueOf(userId));
+            user.setAccountType(7L);
+            req.setUser(user);
+        }
         req.setContent(content);
         return req;
     }

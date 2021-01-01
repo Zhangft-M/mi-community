@@ -14,7 +14,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @author: Micah
  * @create: 2020-12-01 16:00
  **/
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@SpringBootApplication
 @EnableCustomFeignClient
 @EnableCustomizeResourceServer
 public class MiToolApplication {

@@ -13,7 +13,7 @@
         <result property="postCount" column="post_count"/>
         <result property="lastLoginIp" column="last_login_ip"/>
         <result property="lastLoginTime" column="last_login_time"/>
-        <result property="phone" column="phone"/>
+        <result property="phoneNumber" column="phone_number"/>
         <result property="hasDelete" column="has_delete"/>
         <result property="updateTime" column="update_time"/>
         <result property="createTime" column="create_time"/>
@@ -27,7 +27,7 @@
         ${property}.username,
         ${property}.password,
         ${property}.gender,
-        ${property}.phone,
+        ${property}.phone_number,
         ${property}.email,
         ${property}.point,
         ${property}.post_count,
@@ -52,7 +52,7 @@
                 mu.username = #{certificate}
             </if>
             <if test="type == 1">
-                mu.phone = #{certificate}
+                mu.phone_number = #{certificate}
             </if>
         </where>
     </select>

@@ -35,6 +35,7 @@ public class UserOwnPostController {
         if (isMember) {
             return R.success(Boolean.TRUE);
         }
+        // 缓存未命中，从数据库中查询
         UserOwnPost userOwnPost = new UserOwnPost();
         userOwnPost.setPostId(postId);
         userOwnPost.setUserId(userId);

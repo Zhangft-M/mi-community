@@ -32,7 +32,8 @@ public class MiUserRemoteApiFallback implements MiUserRemoteApi {
     }
 
     @Override
-    public void updateUserInfo(MiUser user) {
+    public void updateUserInfo(MiUser user, String code) {
+
     }
 
     @Override
@@ -43,5 +44,10 @@ public class MiUserRemoteApiFallback implements MiUserRemoteApi {
     @Override
     public MiUserDTO getUserInfo(Long userId) {
         return null;
+    }
+
+    @Override
+    public void incrementUserPostCount(Long userId, String fromIn) {
+
     }
 }

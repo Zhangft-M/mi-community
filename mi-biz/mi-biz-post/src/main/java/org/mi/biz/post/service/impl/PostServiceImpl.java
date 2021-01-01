@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.common.mp.annotation.Query;
 import org.common.mp.util.QueryUtils;
 import org.elasticsearch.index.query.*;
@@ -51,14 +50,12 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.tags.HtmlEscapeTag;
-import org.springframework.web.servlet.tags.HtmlEscapingAwareTag;
-
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static org.mi.common.core.util.TextUtils.hideText;
@@ -93,7 +90,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     private static final Boolean IS_RECOMMEND = true;
 
-    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(3,5,5000, TimeUnit.MILLISECONDS,new LinkedBlockingDeque<>()
+    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(5,10,5000, TimeUnit.MILLISECONDS,new LinkedBlockingDeque<>()
             ,new CustomizableThreadFactory("post-deal-thread-"));
 
     @Autowired
@@ -111,7 +108,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         if (one.getContent().getPoint() > 0 && one.getContent().getCategoryId().equals(2L)) {
             // 查询数据库,看用户是否已经有阅读该贴的权限
             Long userId = SecurityContextHelper.getUserId();
-            Boolean isMember = this.redisUtils.sIsMember(RedisCacheConstant.USER_OWN_POST_ID + userId, id);
+            Boolean isMember = this.redisUtils.sIsMember(RedisCacheConstant.USER_OWN_POST_ID + userId, String.valueOf(id));
             if (!isMember) {
                 // TODO: 2020/12/25 需解决分布式事务问题 ,无法避免
                 // 没有数据,判断用户是否有足够的积分阅读,如果有则扣除
@@ -123,21 +120,38 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
             }
 
         }
+        executor.execute(()->{
+            Object count = this.redisUtils.hget(RedisCacheConstant.POST_VIEW_COUNTS_PREFIX, String.valueOf(id));
+            if (count != null) {
+                one.getContent().setViewCount(Long.valueOf(String.valueOf(count)));
+            }
+        });
+        executor.execute(()->{
+            AtomicLong atomicInteger = new AtomicLong();
+            atomicInteger.set(one.getContent().getViewCount() + 1);
+            if (this.redisUtils.hHasKey(RedisCacheConstant.POST_VIEW_COUNTS_PREFIX,String.valueOf(id))){
+                this.redisUtils.hincr(RedisCacheConstant.POST_VIEW_COUNTS_PREFIX,String.valueOf(id),1L);
+            }else {
+                this.redisUtils.hset(RedisCacheConstant.POST_VIEW_COUNTS_PREFIX,String.valueOf(id),atomicInteger.get());
+            }
+        });
         // 查询缓存，记录是否有点赞记录,当进行点赞操作的时候直接操作缓存,将数据的点赞数加一
-        Integer count = (Integer) this.redisUtils.get(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
+        Integer count = (Integer)this.redisUtils.hget(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX,String.valueOf(id));
+        // Integer count = (Integer) this.redisUtils.get(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id);
         if (!Objects.isNull(count)) {
             // 更新数据
             one.getContent().setVoteUp(count);
         } else {
             // 保存一份缓存
-            this.redisUtils.set(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id, one.getContent().getVoteUp());
+            this.redisUtils.hset(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX,String.valueOf(id),one.getContent().getVoteUp());
+            // this.redisUtils.set(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + id, one.getContent().getVoteUp());
         }
+
         return one.getContent();
     }
 
     @Override
     public PageResult list(PostQueryCriteria criteria, Pageable pageParam) {
-
         // Page<EsPost> pageResult = this.postDAO.findByCategoryIdOrTitleOrUsername(criteria.getId(), criteria.getTitle(), criteria.getUsername(), pageRequest);
         NativeSearchQuery query = this.createQueryCriteria(criteria, pageParam);
         SearchHits<EsPost> searchResults = this.elasticsearchRestTemplate.search(query, EsPost.class);
@@ -298,6 +312,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
         if (postEntity.insert()) {
             executor.execute(()->{
                 this.userOwnPostRemoteApi.addUserOwnPost(postEntity.getUserId(), postEntity.getId(), postEntity.getPoint(), SecurityConstant.FROM_IN);
+            });
+            executor.execute(()-> {
+                this.userRemoteApi.incrementUserPostCount(postEntity.getUserId(),SecurityConstant.FROM_IN);
             });
             if (postEntity.getPoint() > 0 && postEntity.getCategoryId().equals(1L)) {
                 this.userRemoteApi.updateUserPoint(0, postEntity.getPoint(), postEntity.getUserId(), SecurityConstant.FROM_IN);

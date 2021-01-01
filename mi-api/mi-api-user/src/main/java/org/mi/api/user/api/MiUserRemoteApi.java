@@ -42,7 +42,7 @@ public interface MiUserRemoteApi {
      * @return
      */
     @PutMapping("/user/update")
-    void updateUserInfo(@RequestBody MiUser user);
+    void updateUserInfo(MiUser user, @RequestParam(value = "verifyCode",required = false) String code);
 
     /**
      * 更新用户的积分
@@ -56,4 +56,7 @@ public interface MiUserRemoteApi {
 
     @GetMapping("/user/info")
     MiUserDTO getUserInfo(@RequestParam("userId") Long userId);
+
+    @PutMapping("/user/postCount/increment")
+    void incrementUserPostCount(@RequestParam("userId") Long userId, @RequestHeader("from") String fromIn);
 }

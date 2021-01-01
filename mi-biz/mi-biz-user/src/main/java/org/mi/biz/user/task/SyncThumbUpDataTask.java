@@ -31,51 +31,20 @@ import java.util.stream.Collectors;
  * @create: 2020-11-22 15:13
  **/
 @Slf4j
-@Component
-@EnableScheduling
+// @Component
+// @EnableScheduling
 @RequiredArgsConstructor
 public class SyncThumbUpDataTask {
-
-    private final CommentRemoteApi commentRemoteApi;
-
-    private final PostRemoteApi postRemoteApi;
 
     private final IUserThumbUpService userThumbUpService;
 
     private final RedisUtils redisUtils;
 
-    /**
-     * 同步点赞的用户与评论相连接的表
-     */
-    @Scheduled(cron = "0 0 0 */1 * ?")
-    @Transactional(rollbackFor = Exception.class)
-    public void syncVoteUpData(){
-      log.info("----------------------------开始同步点赞数据,开始时间为{}------------------------------",LocalDateTime.now());
-      try {
-          List<String> keyList = this.redisUtils.scan(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + "*");
-          List<Comment> collect = keyList.stream().map(key -> Comment.builder().id(Long.valueOf(key.split(":")[2]))
-                  .voteUp((Integer) this.redisUtils.get(key))
-                  .build()).collect(Collectors.toList());
-          List<Post> postList = collect.stream().map(data -> {
-              Post post = new Post();
-              post.setId(data.getId());
-              post.setVoteUp(data.getVoteUp());
-              return post;
-          }).collect(Collectors.toList());
-          this.commentRemoteApi.updateBatchById(collect);
-          this.postRemoteApi.updateBatchById(postList);
-          this.redisUtils.del(keyList.toArray(new String[0]));
-          log.info("-----------------------同步点赞完成,同步的时间为{}--------------------------", LocalDateTime.now());
-      }catch (Exception e){
-        log.info("同步数据失败,通知管理员");
-        throw new RuntimeException("同步数据失败");
-      }
-    }
 
     /**
      * 同步点赞的用户与评论相连接的表
      */
-    @Scheduled(cron = "0 0 0 */1 * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     @Transactional(rollbackFor = Exception.class)
     public void syncThumbUpData(){
         log.info("----------------------------开始同步用户与点赞评论数据,开始时间为{}------------------------------",LocalDateTime.now());
@@ -113,7 +82,7 @@ public class SyncThumbUpDataTask {
             }
             log.info("-----------------------删除数据,完成时间为{}-------------------------",LocalDateTime.now());
         }catch (Exception e){
-            log.info("同步数据失败,通知管理员");
+            log.info("同步数据失败,通知管理员ex=>{}",e.toString());
             throw new RuntimeException("同步数据失败");
         }
     }

@@ -2,6 +2,7 @@ package org.mi.common.core.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +25,8 @@ import java.util.concurrent.TimeUnit;
  **/
 @Component
 @SuppressWarnings({"unchecked", "all"})
+@Slf4j
 public class RedisUtils {
-    private static final Logger log = LoggerFactory.getLogger(RedisUtils.class);
     private RedisTemplate redisTemplate;
 
     public RedisUtils(RedisTemplate redisTemplate) {
@@ -399,7 +400,7 @@ public class RedisUtils {
      * @param by   要增加几(大于0)
      * @return
      */
-    public double hincr(String key, String item, double by) {
+    public Long hincr(String key, String item, Long by) {
         return redisTemplate.opsForHash().increment(key, item, by);
     }
 
@@ -722,5 +723,15 @@ public class RedisUtils {
         log.debug("成功删除缓存：" + keys.toString());
         log.debug("缓存删除数量：" + count + "个");
         log.debug("--------------------------------------------");
+    }
+
+    public Map<String,Object> hEntries(String hkey) {
+        try {
+            Map<String,Object> entries = this.redisTemplate.opsForHash().entries(hkey);
+            return entries;
+        } catch (Exception e) {
+            log.warn("获取哈希数据失败:ex=>{}",e);
+        }
+        return null;
     }
 }

@@ -83,19 +83,22 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         SearchHits<EsComment> result = this.elasticsearchRestTemplate.search(query, EsComment.class);
         List<CommentTree> commentList = result.stream().map(
                 data -> {
-                    Integer voteUpCount = (Integer) this.redisUtils.get(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId());
+                    String commentId = String.valueOf(data.getContent().getId());
+                    Integer voteUpCount = (Integer) this.redisUtils.hget(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX,commentId);
+                    // Integer voteUpCount = (Integer) this.redisUtils.get(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId());
                     if (!Objects.isNull(voteUpCount)) {
                         // 命中缓存，更新一下点赞数
                         data.getContent().setVoteUp(voteUpCount);
                     } else {
-                        this.redisUtils.set(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId(), data.getContent().getVoteUp());
+                        this.redisUtils.hset(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX,commentId,data.getContent().getVoteUp());
+                        // this.redisUtils.set(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX + data.getContent().getId(), data.getContent().getVoteUp());
                     }
                     return this.commentMapStruct.toDto(data.getContent());
                 }).sorted(Comparator.comparingInt(CommentTree::getVoteUp).reversed()).collect(Collectors.toList());
         List<CommentTree> commentTree = this.createCommentTree(commentList);
         for (CommentTree data : commentTree) {
+            secondFloorData = Lists.newCopyOnWriteArrayList();
             if (data.getChildren() != null) {
-                secondFloorData = Lists.newCopyOnWriteArrayList();
                 this.getSecondFloorTree(data, data.getId());
             }
             if (CollUtil.isNotEmpty(secondFloorData)) {

@@ -16,6 +16,7 @@ import org.mi.common.core.exception.IllegalRequestException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.util.RedisUtils;
 import org.mi.gateway.config.WebClientConfigProperties;
+import org.mi.gateway.util.WebServerUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -51,7 +52,7 @@ import static org.mi.gateway.util.WebServerUtils.generateNewRequest;
  **/
 @Component
 @RequiredArgsConstructor
-public class PhoneVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> {
+public class PhoneLoginVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> {
 
     private final StringRedisTemplate redisTemplate;
 
@@ -59,43 +60,35 @@ public class PhoneVerifyCodeFilter extends AbstractGatewayFilterFactory<Object> 
     @Override
     public GatewayFilter apply(Object config) {
         return new GatewayFilter() {
-            private final StringRedisTemplate redisTemplate = PhoneVerifyCodeFilter.this.redisTemplate;
-
+            private final StringRedisTemplate redisTemplate = PhoneLoginVerifyCodeFilter.this.redisTemplate;
             @Override
             public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
                 ServerHttpRequest request = exchange.getRequest();
                 String path = request.getURI().getPath();
-                for (String filterPath : SecurityConstant.VERIFY_CODE_VALIDATE_PATH) {
-                    if (StrUtil.containsIgnoreCase(path,filterPath)){
-                        if (!HttpMethod.POST.equals(request.getMethod())){
-                            return Mono.error(new IllegalRequestException("请求方法不正确"));
-                        }
-                        return DataBufferUtils.join(exchange.getRequest().getBody()).map(dataBuffer -> {
-                            byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                            dataBuffer.read(bytes);
-                            DataBufferUtils.release(dataBuffer);
-                            return bytes;
-                        }).flatMap(bodyBytes -> {
-                            String msg = new String(bodyBytes, StandardCharsets.UTF_8);
-                            boolean isJson = JSONUtil.isJson(msg);
-                            if (!isJson){
-                                return Mono.error(new IllegalParameterException("参数格式不正确"));
-                            }
-                            JSON param = JSONUtil.parse(msg);
-                            String phoneNumber =  String.valueOf(param.getByPath(MiUserConstant.PHONE_NUMBER));
-                            String verifyCode =  String.valueOf(param.getByPath(MiUserConstant.VERIFY_CODE));
-                            AssertUtil.notBlank(phoneNumber,verifyCode);
-                            String cacheVerifyCode = String.valueOf(this.redisTemplate.opsForValue().get(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber));
-                            if (!StrUtil.equals(cacheVerifyCode,verifyCode)){
-                                return Mono.error(new IllegalParameterException("验证码错误"));
-                            }
-                            this.redisTemplate.delete(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
-                            exchange.getAttributes().put(MiUserConstant.PHONE_NUMBER,phoneNumber);
-                            return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), param.toJSONString(0).getBytes(StandardCharsets.UTF_8))).build());
-                        });
-                    }
+                if (!StrUtil.containsIgnoreCase(path, SecurityConstant.VERIFY_CODE_LOGIN)) {
+                    return chain.filter(exchange);
                 }
-                return chain.filter(exchange);
+                if (!HttpMethod.POST.equals(request.getMethod())) {
+                    return Mono.error(new IllegalRequestException("请求方法不正确"));
+                }
+                return DataBufferUtils.join(exchange.getRequest().getBody()).map(dataBuffer -> {
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
+                    DataBufferUtils.release(dataBuffer);
+                    return bytes;
+                }).flatMap(bodyBytes -> {
+                    String msg = new String(bodyBytes, StandardCharsets.UTF_8);
+                    JSON params = null;
+                    try {
+                        params = WebServerUtils.checkVerifyCode(msg, this.redisTemplate);
+                    } catch (Exception e) {
+                        return Mono.error(new IllegalRequestException(e.getMessage()));
+                    }
+                    AssertUtil.notNull(params);
+                    exchange.getAttributes().put(MiUserConstant.PHONE_NUMBER, String.valueOf(params.getByPath(MiUserConstant.PHONE_NUMBER)));
+                    return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), params.toJSONString(0).getBytes(StandardCharsets.UTF_8))).build());
+                });
+
             }
         };
     }

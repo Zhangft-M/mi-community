@@ -1,6 +1,7 @@
 package org.mi.gateway.util;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import io.netty.buffer.ByteBufAllocator;
@@ -13,11 +14,14 @@ import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * @program: mi-community
@@ -55,11 +59,20 @@ public class WebServerUtils {
         String phoneNumber =  String.valueOf(param.getByPath(MiUserConstant.PHONE_NUMBER));
         String verifyCode =  String.valueOf(param.getByPath(MiUserConstant.VERIFY_CODE));
         String cacheVerifyCode = String.valueOf(redisTemplate.opsForValue().get(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber));
+        if (cacheVerifyCode == null) {
+            throw new IllegalParameterException("验证码已经过期,请重新输入");
+        }
         AssertUtil.notBlank(phoneNumber,verifyCode);
         if (!StrUtil.equals(cacheVerifyCode,verifyCode)){
             throw new IllegalParameterException("验证码错误");
         }
         redisTemplate.delete(RedisCacheConstant.VERIFY_CODE_PREFIX + phoneNumber);
         return param;
+    }
+
+    public static ServerHttpRequest generateNewRequest(Map<String,Object> map, ServerWebExchange exchange) {
+        String params = HttpUtil.toParams(map, StandardCharsets.UTF_8);
+        URI newUri = UriComponentsBuilder.fromUri(exchange.getRequest().getURI()).replaceQuery(params).build(true).toUri();
+        return exchange.getRequest().mutate().uri(newUri).build();
     }
 }

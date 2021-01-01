@@ -10,7 +10,8 @@ public interface UserThumbUpConstant {
 
     // String POST_THUMB_UP_PREFIX = "post:thumbUp:";
 
-    String CONTENT_THUMB_UP_NUM_PREFIX = "content:thumbUp:count:";
+    // TODO: 2020/12/31 后续点赞这一块需要全部优化
+    String CONTENT_THUMB_UP_NUM_PREFIX = "content:thumbUp:count";
 
     String USER_THUMB_UP_CONTENT_PREFIX = "user:thumbUp:content:userId:";
 }

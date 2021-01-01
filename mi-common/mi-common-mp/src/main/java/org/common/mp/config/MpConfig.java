@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @create: 2020-10-22 22:32
  **/
 @EnableTransactionManagement
-@MapperScan({"org.mi.biz.post.mapper","org.mi.biz.user.mapper"})
+@MapperScan({"org.mi.biz.post.mapper","org.mi.biz.user.mapper","org.mi.biz.tool.mapper"})
 @ComponentScan(value = {"org.mi.api.*.mapstruct"})
 public class MpConfig {
 

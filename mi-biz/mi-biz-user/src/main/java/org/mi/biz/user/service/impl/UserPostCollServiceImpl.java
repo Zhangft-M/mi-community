@@ -32,7 +32,7 @@ public class UserPostCollServiceImpl extends ServiceImpl<UserPostCollMapper, Use
         Set<Long> results = Sets.newConcurrentHashSet();
         Set<Object> cacheResults = this.redisUtils.sGet(RedisCacheConstant.USER_COLLECT_POST + userId);
         if (CollUtil.isNotEmpty(cacheResults)) {
-            results.addAll(cacheResults.stream().map(data -> (Long) data).collect(Collectors.toSet()));
+            results.addAll(cacheResults.stream().map(data -> Long.valueOf(String.valueOf(data))).collect(Collectors.toSet()));
         } else {
             List<UserPostCollections> userPostFavorites = this.baseMapper.selectList(Wrappers.<UserPostCollections>lambdaQuery()
                     .eq(UserPostCollections::getUserId, userId)

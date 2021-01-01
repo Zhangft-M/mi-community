@@ -99,6 +99,7 @@ public class FileUtils {
 
         try {
             // 创建一个唯一的临时文件
+
             file = File.createTempFile(IdUtil.simpleUUID(), suffix);
             // 将MultipartFile转化为File
             multipartFile.transferTo(file);

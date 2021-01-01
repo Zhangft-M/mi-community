@@ -31,4 +31,9 @@ public class ContentCheckServiceImpl implements IContentCheckService {
     public Checker checkPicFromUrl(String url, Long userId) {
         return this.contentVerifyHelper.tencentImageUrlCheck(url,userId);
     }
+
+    @Override
+    public Checker checkTxtWithoutUserId(String content) {
+        return this.contentVerifyHelper.tencentTextCheck(content,null);
+    }
 }

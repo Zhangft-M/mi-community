@@ -19,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @program: mi-community
@@ -30,7 +32,7 @@ import java.util.Objects;
 @UtilityClass
 public class AssertUtil {
 
-    private static final String EMAIL_FORMAT = "\\p{Alpha}\\w{2,15}[@][a-z0-9]{3,}[.]\\p{Lower}{2,}";
+    private static final String EMAIL_FORMAT = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
 
     public static void notNull(Object... o) {
         for (Object o1 : o) {
@@ -118,7 +120,9 @@ public class AssertUtil {
     }
 
     public static void isEmail(String email){
-        if (!email.matches(EMAIL_FORMAT)){
+        Pattern regx = Pattern.compile(EMAIL_FORMAT);
+        Matcher matcher = regx.matcher(email);
+        if (!matcher.matches()){
             throw new IllegalParameterException("邮箱格式不正确");
         }
     }

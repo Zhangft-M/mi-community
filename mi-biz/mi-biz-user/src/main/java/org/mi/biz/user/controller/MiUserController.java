@@ -56,9 +56,9 @@ public class MiUserController {
     }
 
     @Anonymous
-    @PostMapping
-    public R<Void> register(@RequestBody MiUser miUser){
-        AssertUtil.idIsNotNull(miUser.getId());
+    @PostMapping("register")
+    public R<Void> register(MiUser miUser){
+        AssertUtil.idIsNull(miUser.getId());
         this.miUserService.register(miUser);
         return R.success();
     }
@@ -83,8 +83,17 @@ public class MiUserController {
         return R.fail();
     }
 
-    @PutMapping("update/{code}")
-    public R<MiUserDTO> updateUserInfo(@RequestBody MiUser user, @PathVariable String code){
+    /*@PutMapping("update/{verifyCode}")
+    public R<MiUserDTO> updateUserInfo(@RequestBody MiUser user, @PathVariable(required = false,value = "verifyCode") String code){
+        AssertUtil.idIsNull(user.getId());
+        Long userId = SecurityContextHelper.getUserId();
+        user.setId(userId);
+        MiUserDTO userDTO = this.miUserService.updateUserInfo(user,code);
+        return R.success(userDTO);
+    }*/
+
+    @PutMapping("update")
+    public R<MiUserDTO> update(MiUser user, @RequestParam(value = "verifyCode",required = false) String code){
         AssertUtil.idIsNull(user.getId());
         Long userId = SecurityContextHelper.getUserId();
         user.setId(userId);
@@ -117,10 +126,31 @@ public class MiUserController {
     }
 
     @PutMapping("changePassword")
-    public R<Void> changePassword(String newPassword){
+    public R<Void> changePassword(@RequestParam("password") String newPassword){
         AssertUtil.notBlank(newPassword);
         Long userId = SecurityContextHelper.getUserId();
         this.miUserService.changePassword(newPassword,userId);
+        return R.success();
+    }
+
+    @Inner
+    @PutMapping("/postCount/increment")
+    public R<Void> incrementUserPostCount(@RequestParam("userId") Long userId){
+        this.miUserService.incrementUserPostCount(userId);
+        return R.success();
+    }
+
+
+    /**
+     * 修改密码校验用户的手机号是否正确
+     * @param phoneNumber
+     * @param code
+     * @return
+     */
+    @PostMapping("/checkUser/phoneNumber")
+    public R<Void> checkUserPhoneNumber(@RequestParam String phoneNumber,@RequestParam("verifyCode") String code){
+        Long userId = SecurityContextHelper.getUserId();
+        this.miUserService.checkUserPhoneNumber(userId,phoneNumber,code);
         return R.success();
     }
 

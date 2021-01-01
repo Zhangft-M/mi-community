@@ -63,4 +63,18 @@ public interface IMiUserService extends IService<MiUser> {
      * @return
      */
     MiUserDTO updateUserInfo(MiUser user, String code);
+
+    /**
+     * 增加用户的发帖数
+     * @param userId
+     */
+    void incrementUserPostCount(Long userId);
+
+    /**
+     * 校验用户手机号是否正确
+     * @param userId
+     * @param phoneNumber
+     * @param code
+     */
+    void checkUserPhoneNumber(Long userId, String phoneNumber, String code);
 }

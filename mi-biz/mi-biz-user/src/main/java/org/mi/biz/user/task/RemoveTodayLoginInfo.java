@@ -17,17 +17,17 @@ import java.time.LocalDateTime;
  * @create: 2020-12-21 19:12
  **/
 @Slf4j
-@Component
-@EnableScheduling
+// @Component
+// @EnableScheduling
 @RequiredArgsConstructor
 public class RemoveTodayLoginInfo {
 
     private final RedisUtils redisUtils;
 
-    @Scheduled(cron = "0 0 0 */1 * ?")
-    public void removeTodayLoginInfo(){
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void removeTodayLoginInfo() {
         log.info("-------------------------开始删除redis中今天已经登录的用户,开始时间为={}-----------------------------------", LocalDateTime.now());
         this.redisUtils.del(RedisCacheConstant.USER_TODAY_HAS_LOGIN + "*");
-        log.info("-------------------------删除完毕,结束时间为={}-----------------------------------",LocalDateTime.now());
+        log.info("-------------------------删除完毕,结束时间为={}-----------------------------------", LocalDateTime.now());
     }
 }

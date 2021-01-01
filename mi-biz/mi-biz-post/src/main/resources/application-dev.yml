@@ -1,0 +1,36 @@
+server:
+  port: 1005
+spring:
+  datasource:
+    url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: weihanhan1005
+    hikari:
+      max-lifetime: 188000
+  elasticsearch:
+    rest:
+      uris: http://8.129.40.60:9200
+  redis:
+    cluster:
+      nodes:
+        - 81.70.197.232:6391
+        - 81.70.197.232:6392
+        - 81.70.197.232:6393
+        - 81.70.197.232:6394
+        - 81.70.197.232:6395
+        - 81.70.197.232:6396
+  application:
+    name: MI-POST-SERVER
+  cloud:
+    nacos:
+      server-addr: 39.97.76.127
+      discovery:
+        group: MI-GROUP
+logging:
+  file:
+    name: mi-post
+    path: E:\code\logfile
+rocketmq:
+  name-server: 8.129.40.60:9876
+  producer:
+    group: MI-POST-GROUP

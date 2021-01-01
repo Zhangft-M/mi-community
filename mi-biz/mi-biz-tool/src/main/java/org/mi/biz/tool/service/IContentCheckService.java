@@ -25,4 +25,11 @@ public interface IContentCheckService {
      * @return
      */
     Checker checkPicFromUrl(String url, Long userId);
+
+    /**
+     * 对文本进行审核校验，不带用户名id，不进行二次审核
+     * @param content
+     * @return
+     */
+    Checker checkTxtWithoutUserId(String content);
 }

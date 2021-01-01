@@ -32,6 +32,7 @@ public class GlobalExceptionHandle {
     }
 
 
+
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<String> methodArgumentNotValidExceptionHandle(MethodArgumentNotValidException e){
@@ -58,6 +59,12 @@ public class GlobalExceptionHandle {
             }
         }
         return R.fail(message, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public R<String> runtimeExceptionHandle(RuntimeException e){
+        log.warn("异常请求:ex=>{}",e.toString());
+        return R.ofException(e.getMessage());
     }
 
 }

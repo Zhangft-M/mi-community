@@ -21,7 +21,7 @@ public class MiUserDTO implements Serializable {
 
     private String username;
 
-    private String phone;
+    private String phoneNumber;
 
     @Email
     private String email;

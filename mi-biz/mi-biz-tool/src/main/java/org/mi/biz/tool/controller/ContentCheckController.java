@@ -7,6 +7,7 @@ import org.mi.biz.tool.service.IContentCheckService;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.mi.common.core.result.R;
 import org.mi.security.annotation.Anonymous;
+import org.mi.security.annotation.Inner;
 import org.mi.security.util.SecurityContextHelper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,13 @@ public class ContentCheckController {
     public R<Checker> checkPicFromUrl(String url){
         Long userId = SecurityContextHelper.getUserId();
         Checker checker = this.contentCheckService.checkPicFromUrl(url,userId);
+        return R.success(checker);
+    }
+
+    @Inner
+    @GetMapping("txt/withoutUser")
+    public R<Checker> checkTxtWithoutUserId(String content){
+        Checker checker = this.contentCheckService.checkTxtWithoutUserId(content);
         return R.success(checker);
     }
 }

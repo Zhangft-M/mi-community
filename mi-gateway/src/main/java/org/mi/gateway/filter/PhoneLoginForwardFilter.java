@@ -8,6 +8,7 @@ import org.mi.common.core.constant.AuthClientConstant;
 import org.mi.common.core.constant.MiUserConstant;
 import org.mi.common.core.constant.SecurityConstant;
 import org.mi.gateway.config.WebClientConfigProperties;
+import org.mi.gateway.util.WebServerUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -28,6 +29,7 @@ import java.util.Map;
  * @create: 2020-12-18 22:41
  **/
 @Component
+@Deprecated
 @RequiredArgsConstructor
 public class PhoneLoginForwardFilter extends AbstractGatewayFilterFactory<Object> {
 
@@ -51,11 +53,8 @@ public class PhoneLoginForwardFilter extends AbstractGatewayFilterFactory<Object
                 this.params.put(StrUtil.toCamelCase(AuthClientConstant.GRANT_TYPE), this.clientConfigProperties.getPhoneVerifyCodeGrantType());
                 this.params.put(AuthClientConstant.SCOPE, this.clientConfigProperties.getScope());
                 this.params.put(MiUserConstant.PHONE_NUMBER,phoneNumber);
-
-                String params = HttpUtil.toParams(this.params, StandardCharsets.UTF_8);
-                URI newUri = UriComponentsBuilder.fromUri(exchange.getRequest().getURI()).replaceQuery(params).build(true).toUri();
-                ServerHttpRequest serverHttpRequest = exchange.getRequest().mutate().uri(newUri).build();
-                return chain.filter(exchange.mutate().request(serverHttpRequest).build());
+                ServerHttpRequest newRequest = WebServerUtils.generateNewRequest(this.params, exchange);
+                return chain.filter(exchange.mutate().request(newRequest).build());
             }
         };
     }

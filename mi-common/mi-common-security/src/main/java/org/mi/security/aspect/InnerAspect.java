@@ -8,6 +8,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.mi.common.core.constant.SecurityConstant;
+import org.mi.common.core.exception.BaseException;
+import org.mi.common.core.exception.NoPermissionException;
 import org.mi.common.core.util.RedisUtils;
 import org.mi.security.annotation.Inner;
 import org.springframework.core.Ordered;
@@ -37,13 +39,13 @@ public class InnerAspect implements Ordered {
         String header = request.getHeader(SecurityConstant.FROM);
         if (inner.value() && !StrUtil.equals(SecurityConstant.FROM_IN, header)) {
             log.warn("访问接口 {} 没有权限", pjp.getSignature().getName());
-            throw new AccessDeniedException("Access is denied");
+            throw new NoPermissionException();
         }
         String requestCertificate = request.getHeader(SecurityConstant.INNER_REQUEST_CERTIFICATE);
         Object certificate = this.redisUtils.get(requestCertificate);
         if (null == certificate) {
             log.warn("访问接口 {} 没有权限", pjp.getSignature().getName());
-            throw new AccessDeniedException("Access is denied");
+            throw new NoPermissionException();
         }
         this.redisUtils.del(requestCertificate);
         return pjp.proceed();
