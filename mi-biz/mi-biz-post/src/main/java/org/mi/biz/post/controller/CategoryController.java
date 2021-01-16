@@ -6,6 +6,7 @@ import org.mi.biz.post.service.ICategoryService;
 import org.mi.common.core.result.R;
 import org.mi.security.annotation.Anonymous;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +26,7 @@ public class CategoryController {
     private final ICategoryService categoryService;
 
     @Anonymous
-    @GetMapping
+    @GetMapping ("all")
     public R<List<CategoryDTO>> listData(){
         List<CategoryDTO> result = this.categoryService.listData();
         return R.success(result);

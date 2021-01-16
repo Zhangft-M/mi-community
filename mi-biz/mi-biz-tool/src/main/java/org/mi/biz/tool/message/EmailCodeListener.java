@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  **/
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(consumerGroup = "EMAil-CODE-CONSUMER-GROUP", topic = EmailConstant.EMAIL_TOPIC,
+@RocketMQMessageListener(consumerGroup = "EMAil-CODE-DEV-CONSUMER-GROUP", topic = EmailConstant.EMAIL_TOPIC,
         selectorExpression = EmailConstant.EMAIL_CODE_TAG)
 public class EmailCodeListener implements RocketMQListener<EmailDTO> {
 

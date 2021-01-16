@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(consumerGroup = "EMAil-POST-REPLY-CONSUMER-GROUP",topic = EmailConstant.EMAIL_TOPIC,
+@RocketMQMessageListener(consumerGroup = "EMAil-POST-REPLY-DEV-CONSUMER-GROUP",topic = EmailConstant.EMAIL_TOPIC,
         selectorExpression = EmailConstant.EMAIL_POST_REPLY_TAG)
 public class EmailPostReplyListener implements RocketMQListener<EmailDTO> {
 

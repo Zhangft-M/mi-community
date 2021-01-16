@@ -43,6 +43,8 @@ public class FileUtils {
     private static final int GB = 1024 * 1024 * 1024;
 
     private static final String[] IMAGE_TYPE = new String[]{".bmp", ".jpg", ".jpeg", ".gif", ".png"};
+
+    private static final String[] IMAGE_MIME_TYPE = new String[]{"image/jpeg", "image/png", "image/gif"};
     /**
      * 定义MB的计算常量
      */
@@ -59,16 +61,17 @@ public class FileUtils {
 
     /**
      * 从类路径读取文件
+     *
      * @param path
      * @return
      */
-    public static String readFileContent(String path){
+    public static String readFileContent(String path) {
         String s = "";
         ClassPathResource classPathResource = new ClassPathResource(path);
         BufferedReader reader = classPathResource.getReader(StandardCharsets.UTF_8);
         StringBuilder content = new StringBuilder();
         try {
-            while (StrUtil.isNotBlank((s = reader.readLine()))){
+            while (StrUtil.isNotBlank((s = reader.readLine()))) {
                 content.append(s);
             }
         } catch (IOException e) {
@@ -214,14 +217,15 @@ public class FileUtils {
 
     /**
      * 获取文件类型
+     *
      * @param type
      * @return
      */
-    public static String getFileType(String type){
+    public static String getFileType(String type) {
         String[] documents = new String[]{"txt", "doc", "pdf", "ppt", "pps", "xlsx", "xls", "docx"};
-        String[] musics = new String[]{"mp3" ,"wav" ,"wma" ,"mpa" ,"ram" ,"ra" ,"aac" ,"aif" ,"m4a"};
+        String[] musics = new String[]{"mp3", "wav", "wma", "mpa", "ram", "ra", "aac", "aif", "m4a"};
         String[] videos = new String[]{"avi", "mpg", "mpe", "mpeg", "asf", "wmv", "mov", "qt", "rm", "mp4", "flv", "m4v", "webm", "ogv", "ogg"};
-        String[] images = new String[]{"bmp", "dib", "pcp", "dif", "wmf", "gif", "jpg", "tif", "eps", "psd", "cdr", "iff", "tga", "pcd", "mpt" ,"png","jpeg"};
+        String[] images = new String[]{"bmp", "dib", "pcp", "dif", "wmf", "gif", "jpg", "tif", "eps", "psd", "cdr", "iff", "tga", "pcd", "mpt", "png", "jpeg"};
         if (Arrays.asList(images).contains(type)) {
             return "图片";
         } else if (Arrays.asList(documents).contains(type)) {
@@ -238,7 +242,7 @@ public class FileUtils {
     /**
      * 检查文件是否超过指定的大小,没超过为true，超过为false
      */
-    public static Boolean checkSize(long maxSize, long size){
+    public static Boolean checkSize(long maxSize, long size) {
         // 1M
         int length = 1024 * 1024;
         return size <= (maxSize * length);
@@ -246,40 +250,57 @@ public class FileUtils {
 
     /**
      * 生成文件的路径
+     *
      * @param multipartFile
      * @return
      */
-    public static String createFilePath(MultipartFile multipartFile,Long id) {
+    public static String createFilePath(MultipartFile multipartFile, Long id) {
         DateTime dateTime = new DateTime();
+        final String suffix;
+        switch (multipartFile.getContentType()) {
+            case "image/jpeg":
+                suffix = "jpg";
+                break;
+            case "image/png":
+                suffix = "png";
+                break;
+            case "image/gif":
+                suffix = "gif";
+                break;
+            default:
+                suffix = "";
+        }
         return "images/" + dateTime.toString("yyyy")
                 + "/" + dateTime.toString("MM") + "/"
-                + dateTime.toString("dd")  + "/" +
+                + dateTime.toString("dd") + "/" +
                 id + "/" + IdUtil.simpleUUID() + "." +
-                FileUtil.getSuffix(FileUtils.toFile(multipartFile));
+                suffix;
     }
 
     /**
      * 生成文件的路径
+     *
      * @param suffix 文件后缀名
      * @return
      */
-    public static String createFilePath(String suffix,Long id) {
+    public static String createFilePath(String suffix, Long id) {
         DateTime dateTime = new DateTime();
         return "images/" + dateTime.toString("yyyy")
                 + "/" + dateTime.toString("MM") + "/"
-                + dateTime.toString("dd")  + "/" +
+                + dateTime.toString("dd") + "/" +
                 id + "/" + IdUtil.simpleUUID() + "." +
                 suffix;
     }
 
     /**
      * 校验文件的类型是否正确
+     *
      * @param originalFilename
      * @return
      */
     public static Boolean checkFileType(String originalFilename) {
         for (String type : IMAGE_TYPE) {
-            if (StrUtil.endWithIgnoreCase(originalFilename,type)){
+            if (StrUtil.endWithIgnoreCase(originalFilename, type)) {
                 return true;
             }
         }
@@ -288,25 +309,26 @@ public class FileUtils {
 
     /**
      * 检查两个文件是否是一样的
-     *
      */
-    public static Boolean checkIsSame(File file1,File file2){
+    public static Boolean checkIsSame(File file1, File file2) {
         String m1 = FileUtils.getMD5(file1);
         String m2 = FileUtils.getMD5(file1);
-        return StrUtil.equals(m1,m2);
+        return StrUtil.equals(m1, m2);
     }
 
     /**
      * 获取文件的MD5值
+     *
      * @param file
      * @return
      */
-    public static String getMD5(File file){
+    public static String getMD5(File file) {
         return getMD5(FileUtils.getByte(file));
     }
 
     /**
      * 获取文件的长度
+     *
      * @param file
      * @return
      */
@@ -329,10 +351,11 @@ public class FileUtils {
 
     /**
      * 获取文件的MD5值
+     *
      * @param bytes
      * @return
      */
-    public static String getMD5(byte[] bytes){
+    public static String getMD5(byte[] bytes) {
         // 16进制字符
         char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
         try {
@@ -356,12 +379,13 @@ public class FileUtils {
 
     /**
      * 下载文件
-     * @param request 请求对象
-     * @param response 响应对象
-     * @param file 本地缓存的需要下载的文件
+     *
+     * @param request      请求对象
+     * @param response     响应对象
+     * @param file         本地缓存的需要下载的文件
      * @param deleteOnExit 下载完成后是否删除本地文件
      */
-    public static void downloadFile(HttpServletRequest request, HttpServletResponse response, File file, boolean deleteOnExit){
+    public static void downloadFile(HttpServletRequest request, HttpServletResponse response, File file, boolean deleteOnExit) {
         // 设置响应的编码集
         response.setCharacterEncoding(request.getCharacterEncoding());
         // 设置响应的ContentType
@@ -373,12 +397,12 @@ public class FileUtils {
             // 设置响应头信息
             response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
             // 将输入流写到response对象的输出流中
-            IoUtil.copy(is,response.getOutputStream());
+            IoUtil.copy(is, response.getOutputStream());
             // 刷新输出流
             response.flushBuffer();
-        }catch (IOException e){
+        } catch (IOException e) {
             log.info(e.getMessage(), e);
-        }finally {
+        } finally {
             if (is != null) {
                 try {
                     is.close();
@@ -393,4 +417,18 @@ public class FileUtils {
         }
     }
 
+    /**
+     * 通过文件的contentType判断文件
+     *
+     * @param contentType
+     * @return
+     */
+    public static Boolean checkFileTypeThrowContentType(String contentType) {
+        for (String mimeType : IMAGE_MIME_TYPE) {
+            if (StrUtil.equalsAnyIgnoreCase(contentType, mimeType)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

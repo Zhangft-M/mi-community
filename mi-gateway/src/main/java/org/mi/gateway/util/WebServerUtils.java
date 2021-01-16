@@ -5,15 +5,18 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import io.netty.buffer.ByteBufAllocator;
+import lombok.extern.slf4j.Slf4j;
 import org.mi.common.core.constant.MiUserConstant;
 import org.mi.common.core.constant.RedisCacheConstant;
 import org.mi.common.core.exception.IllegalParameterException;
 import org.mi.common.core.exception.util.AssertUtil;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
@@ -22,6 +25,8 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.*;
 
 /**
  * @program: mi-community
@@ -29,19 +34,28 @@ import java.util.Map;
  * @author: Micah
  * @create: 2020-12-06 00:39
  **/
+@Slf4j
 public class WebServerUtils {
 
-    public static ServerHttpRequest generateNewRequest(ServerHttpRequest request, byte[] bytes) {
+
+    private static final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(5,new CustomizableThreadFactory("gateway-scheduled-thread-"));
+
+    public synchronized static ServerHttpRequest generateNewRequest(ServerHttpRequest request, byte[] bytes) {
         URI ex = UriComponentsBuilder.fromUri(request.getURI()).build(true).toUri();
-        ServerHttpRequest newRequest = request.mutate().uri(ex).build();
+        ServerHttpRequest oldRequest = request.mutate().uri(ex).method(Objects.requireNonNull(request.getMethod())).build();
         DataBuffer dataBuffer = stringBuffer(bytes);
-        Flux<DataBuffer> flux = Flux.just(dataBuffer);
-        newRequest = new ServerHttpRequestDecorator(newRequest) {
+        ServerHttpRequest newRequest = new ServerHttpRequestDecorator(oldRequest) {
             @Override
             public Flux<DataBuffer> getBody() {
-                return flux;
+                return Flux.just(dataBuffer);
             }
         };
+        executorService.schedule(()->{
+            log.info("释放缓冲流");
+            DataBufferUtils.release(dataBuffer);
+        },3, TimeUnit.SECONDS);
+        newRequest.getHeaders().clearContentHeaders();
+        // DataBufferUtils.release(dataBuffer);
         return newRequest;
     }
 
@@ -75,4 +89,5 @@ public class WebServerUtils {
         URI newUri = UriComponentsBuilder.fromUri(exchange.getRequest().getURI()).replaceQuery(params).build(true).toUri();
         return exchange.getRequest().mutate().uri(newUri).build();
     }
+
 }

@@ -1,5 +1,6 @@
 server:
   port: 1005
+  max-http-header-size: 16KB
 spring:
   datasource:
     url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
@@ -23,9 +24,9 @@ spring:
     name: MI-POST-SERVER
   cloud:
     nacos:
-      server-addr: 39.97.76.127
+      server-addr: 47.115.130.177
       discovery:
-        group: MI-GROUP
+        group: MI-DEV-GROUP
 logging:
   file:
     name: mi-post
@@ -33,4 +34,4 @@ logging:
 rocketmq:
   name-server: 8.129.40.60:9876
   producer:
-    group: MI-POST-GROUP
+    group: MI-POST-DEV-GROUP

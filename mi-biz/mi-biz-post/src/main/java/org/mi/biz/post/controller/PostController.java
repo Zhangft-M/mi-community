@@ -46,15 +46,19 @@ public class PostController {
         return R.success(result);
     }
 
+    /**
+     * todo：添加完数据之后，在主页第一次刷新会报错Invalid character found in method name,怀疑是网关问题,没有好的解决方法
+     * @return
+     */
     @Anonymous
-    @GetMapping("recommend")
+    @GetMapping("/recommend/v1")
     public R<List<PostVO>> listRecommend(){
         List<PostVO> result = this.postService.listRecommend();
         return R.success(result);
     }
 
     @PostMapping("/add")
-    public R<Void> save(@RequestBody Post postEntity){
+    public R<Void> save(Post postEntity){
         AssertUtil.idsIsNull(postEntity.getId(), postEntity.getUserId());
         setUserId(postEntity);
         this.postService.savePost(postEntity);

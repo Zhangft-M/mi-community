@@ -20,9 +20,9 @@ spring:
     name: MI-USER-SERVER
   cloud:
     nacos:
-      server-addr: 39.97.76.127:8848
+      server-addr: 47.115.130.177
       discovery:
-        group: MI-GROUP
+        group: MI-DEV-GROUP
 logging:
   file:
     name: mi-post
@@ -30,4 +30,4 @@ logging:
 rocketmq:
   name-server: 8.129.40.60:9876
   producer:
-    group: MI-USER-PRODUCER
+    group: MI-USER-DEV-PRODUCER

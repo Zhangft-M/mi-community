@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(consumerGroup = "SMS-CODE-CONSUMER",topic = SmsMessageConstant.VERIFY_CODE_TOPIC,selectorExpression = SmsMessageConstant.VERIFY_CODE_TAG)
+@RocketMQMessageListener(consumerGroup = "SMS-CODE-DEV-CONSUMER",topic = SmsMessageConstant.VERIFY_CODE_TOPIC,selectorExpression = SmsMessageConstant.VERIFY_CODE_TAG)
 public class SmsListener implements RocketMQListener<String> {
 
     private final ISmsService smsService;

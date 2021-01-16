@@ -80,7 +80,8 @@ public class GoogleVerifyFilter extends AbstractGatewayFilterFactory<Object> {
                                 return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
                             }else if (StrUtil.containsIgnoreCase(requestPath,SecurityConstant.POST_ADD_PATH)) {
                                 JSON postData = (JSON) params.getByPath("postData");
-                                return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), JSONUtil.toJsonStr(postData).getBytes(StandardCharsets.UTF_8))).build());
+                                exchange.getAttributes().put("postData",postData);
+                                return chain.filter(exchange.mutate().request(generateNewRequest(exchange.getRequest(), bodyBytes)).build());
                             }
                             return chain.filter(exchange);
                         });

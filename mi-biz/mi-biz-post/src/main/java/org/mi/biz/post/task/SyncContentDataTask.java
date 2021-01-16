@@ -33,8 +33,8 @@ import java.util.stream.Collectors;
  * @create: 2020-12-31 19:36
  **/
 @Slf4j
-// @Component
-// @EnableScheduling
+@Component
+@EnableScheduling
 @RequiredArgsConstructor
 public class SyncContentDataTask {
 
@@ -97,8 +97,8 @@ public class SyncContentDataTask {
             this.commentService.updateBatchById(comments);
         });
         executor.execute(()->{
-            this.redisUtils.hdel(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX,itemKeys);
+            this.redisUtils.hdel(UserThumbUpConstant.CONTENT_THUMB_UP_NUM_PREFIX,itemKeys.toArray(new String[0]));
         });
-        log.info("----------------------------开始同步Comment数据,开始时间为{}------------------------------", LocalDateTime.now());
+        log.info("----------------------------同步Comment数据结束,结束时间为{}------------------------------", LocalDateTime.now());
     }
 }

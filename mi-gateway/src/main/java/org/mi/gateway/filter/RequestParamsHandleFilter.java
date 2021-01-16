@@ -66,6 +66,7 @@ public class RequestParamsHandleFilter extends AbstractGatewayFilterFactory<Obje
 
             @Override
             public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+                // exchange.getRequest().getHeaders().clearContentHeaders();
                 for (String path : SecurityConstant.DEAL_REQUEST_PARAMS_PATHS) {
                     String requestPath = exchange.getRequest().getURI().getPath();
                     if (StrUtil.containsIgnoreCase(requestPath,path)){

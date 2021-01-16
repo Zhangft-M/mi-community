@@ -12,9 +12,9 @@ spring:
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com
     nacos:
-      server-addr: 39.97.76.127
+      server-addr: 47.115.130.177
       discovery:
-        group: MI-GROUP
+        group: MI-DEV-GROUP
   redis:
     cluster:
       nodes:
@@ -50,7 +50,7 @@ sms:
 rocketmq:
   name-server: 8.129.40.60:9876
   producer:
-    group: MI-TOOL-GROUP
+    group: MI-TOOL-DEV-GROUP
 
 oss:
   config:

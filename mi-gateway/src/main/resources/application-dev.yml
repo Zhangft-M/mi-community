@@ -9,9 +9,9 @@ spring:
     password: weihanhan1005
   cloud:
     nacos:
-      server-addr: 39.97.76.127
+      server-addr: 47.115.130.177:8848
       discovery:
-        group: MI-GROUP
+        group: MI-DEV-GROUP
   webflux:
     hiddenmethod:
       filter:

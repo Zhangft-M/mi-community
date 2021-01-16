@@ -17,15 +17,15 @@ public enum ParamHandlerEnum {
     /**
      * 登录处理器
      */
-    PASSWORD_LOGIN_HANDLER(SecurityConstant.PASSWORD_LOGIN_PATH,"passwordLoginParamHandler"),
+    PASSWORD_LOGIN_HANDLER(SecurityConstant.PASSWORD_LOGIN_PATH, "passwordLoginParamHandler"),
 
-    REGISTER_HANDLER(SecurityConstant.REGISTER_PATH,"registerParamHandler"),
+    REGISTER_HANDLER(SecurityConstant.REGISTER_PATH, "registerParamHandler"),
 
-    PASSWORD_CHANGE_HANDLER(SecurityConstant.PASSWORD_CHANGE_PATH,"passwordChangeHandler"),
+    PASSWORD_CHANGE_HANDLER(SecurityConstant.PASSWORD_CHANGE_PATH, "passwordChangeHandler"),
 
-    VERIFY_CODE_LOGIN_HANDLER(SecurityConstant.VERIFY_CODE_LOGIN,"phoneLoginParamHandler");
+    VERIFY_CODE_LOGIN_HANDLER(SecurityConstant.VERIFY_CODE_LOGIN, "phoneLoginParamHandler"),
 
-
+    ADD_POST_HANDLER(SecurityConstant.POST_ADD_PATH, "addPostParamHandler");
 
 
     private String path;
@@ -38,7 +38,7 @@ public enum ParamHandlerEnum {
         this.beanName = beanName;
     }
 
-    public static String geBeanName(String path){
+    public static String geBeanName(String path) {
         ParamHandlerEnum[] values = ParamHandlerEnum.values();
         for (ParamHandlerEnum value : values) {
             if (value.getPath().equals(path)) {

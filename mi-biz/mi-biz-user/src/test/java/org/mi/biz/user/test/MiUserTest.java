@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.mi.api.user.entity.MiUser;
 import org.mi.biz.user.MiUserApplication;
 import org.mi.biz.user.service.IMiUserService;
+import org.mi.biz.user.task.SyncThumbUpDataTask;
+import org.mi.biz.user.task.SyncUserInfoTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -24,6 +26,12 @@ public class MiUserTest {
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    private SyncThumbUpDataTask syncThumbUpDataTask;
+
+    @Autowired
+    private SyncUserInfoTask syncUserInfoTask;
 
     @Test
     public void queryUser(){
@@ -50,5 +58,11 @@ public class MiUserTest {
                 System.out.println("发送失败" + e.getMessage());
             }
         });
+    }
+
+    @Test
+    public void SyncData(){
+        // this.syncThumbUpDataTask.syncThumbUpData();
+        this.syncUserInfoTask.syncUserPostCount();
     }
 }

@@ -27,6 +27,11 @@ public abstract class AbstractParamHandler {
         this.rsa = rsa;
     }
 
+    /**
+     *
+     * @param attributes 上一个过滤器存储的属性
+     * @return /
+     */
     public Map<String,Object> dealAndPackageParams(Map<String, Object> attributes){
         throw new RuntimeException("该方法需要子类实现");
     }

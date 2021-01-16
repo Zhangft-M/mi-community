@@ -102,11 +102,14 @@ public class AssertUtil {
     }
 
     public static void isPicture(MultipartFile multipartFile){
-        String originalFilename = multipartFile.getOriginalFilename();
-        assert originalFilename != null;
-        Boolean type = FileUtils.checkFileType(originalFilename);
+        // String originalFilename = multipartFile.getOriginalFilename();
+        // assert originalFilename != null;
+        String contentType = multipartFile.getContentType();
+        AssertUtil.notBlank(contentType);
+        // 通过contentType判断文件
+        Boolean type = FileUtils.checkFileTypeThrowContentType(contentType);
         if (!type){
-            throw new IllegalParameterException("图片只支持jpg格式");
+            throw new IllegalParameterException("图片类型错误");
         }
         if (!FileUtils.checkSize(1, multipartFile.getSize())){
             throw new IllegalParameterException("图片最大为1MB");

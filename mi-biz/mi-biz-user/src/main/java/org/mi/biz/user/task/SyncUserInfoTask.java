@@ -25,8 +25,8 @@ import java.util.Set;
  * @create: 2021-01-01 18:22
  **/
 @Slf4j
-// @Component
-// @EnableScheduling
+@Component
+@EnableScheduling
 @RequiredArgsConstructor
 public class SyncUserInfoTask {
 
@@ -39,7 +39,7 @@ public class SyncUserInfoTask {
     @Scheduled(cron = "0 0 0 * * ?")
     @Transactional(rollbackFor = Exception.class)
     public void syncUserPostCount(){
-        log.info("开始同步用户拥有的帖子数的数据:ex=>{}", LocalDateTime.now());
+        log.info("开始同步用户发的帖子数的数据:ex=>{}", LocalDateTime.now());
         Map<String, Object> userIdAndPostCount = this.redisUtils.hEntries(RedisCacheConstant.USER_POST_COUNT_CACHE_PREFIX);
         List<MiUser> userList = Lists.newCopyOnWriteArrayList();
         for (Map.Entry<String, Object> entry : userIdAndPostCount.entrySet()) {

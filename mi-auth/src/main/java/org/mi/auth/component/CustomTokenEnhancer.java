@@ -52,8 +52,6 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         info.put(MiUserConstant.USER_ID,user.getUserId());
         auth2AccessToken.setAdditionalInformation(info);
         // 发送异步消息,保存用户登录信息
-        String requestIp = authentication.getOAuth2Request().getRequestParameters().get("requestIp");
-
         Map<String,Object> messageMap = new HashMap<>();
         messageMap.put(MiUserConstant.USER_ID,user.getUserId());
         messageMap.put(MiUserConstant.LOGIN_IP,this.request.getRemoteAddr());

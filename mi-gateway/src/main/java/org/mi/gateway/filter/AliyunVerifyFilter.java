@@ -31,11 +31,12 @@ import static org.mi.gateway.util.WebServerUtils.generateNewRequest;
 
 /**
  * @program: mi-community
- * @description:
+ * @description: 要钱，玩不起
  * @author: Micah
  * @create: 2020-12-06 00:19
  **/
 @Component
+@Deprecated
 @RequiredArgsConstructor
 public class AliyunVerifyFilter extends AbstractGatewayFilterFactory<Object> {
 

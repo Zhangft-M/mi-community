@@ -34,7 +34,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/social/**",
                         "/verifyCode/login/**").permitAll()
                 .anyRequest().authenticated()
-                .and().csrf().disable();
+                .and()
+                .csrf().disable();
     }
 
     @Bean

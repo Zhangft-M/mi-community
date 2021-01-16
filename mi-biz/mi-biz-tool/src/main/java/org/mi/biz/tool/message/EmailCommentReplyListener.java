@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@RocketMQMessageListener(consumerGroup = "EMAil-COMMENT-REPLY-CONSUMER-GROUP",topic = EmailConstant.EMAIL_TOPIC,
+@RocketMQMessageListener(consumerGroup = "EMAil-COMMENT-REPLY-DEV-CONSUMER-GROUP",topic = EmailConstant.EMAIL_TOPIC,
         selectorExpression = EmailConstant.EMAIL_COMMENT_REPLY_TAG)
 public class EmailCommentReplyListener implements RocketMQListener<EmailDTO> {
 
