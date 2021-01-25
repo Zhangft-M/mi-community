@@ -1,6 +1,8 @@
 package org.mi.biz.post.controller;
 
+import com.alibaba.nacos.common.utils.MD5Utils;
 import lombok.RequiredArgsConstructor;
+import org.bouncycastle.crypto.digests.MD5Digest;
 import org.mi.api.post.dto.CategoryDTO;
 import org.mi.biz.post.service.ICategoryService;
 import org.mi.common.core.result.R;

@@ -734,4 +734,12 @@ public class RedisUtils {
         }
         return null;
     }
+
+    public void setIfNotExit(String value){
+        try {
+            this.redisTemplate.opsForValue().setIfAbsent(value,value,5,TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

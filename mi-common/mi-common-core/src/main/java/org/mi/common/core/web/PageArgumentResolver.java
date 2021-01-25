@@ -1,6 +1,7 @@
 package org.mi.common.core.web;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.mi.common.core.constant.PageParamConstant;

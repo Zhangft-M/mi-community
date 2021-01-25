@@ -1,10 +1,13 @@
 package org.mi.post.test;
 
+import cn.hutool.crypto.digest.MD5;
+import com.alibaba.nacos.common.utils.MD5Utils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +27,12 @@ public class CommonTest {
 
     public static void main(String[] args) throws NoSuchFieldException {
 
-        System.out.println(StringEscapeUtils.escapeHtml("......</p>"));
+        // System.out.println(StringEscapeUtils.escapeHtml("......</p>"));
+        /*System.out.println(MD5Utils.md5Hex("我是谁！！！！！！！", "utf-8"));
+        System.out.println("----------------------------------------");
+        System.out.println(MD5Utils.md5Hex("我是谁！！！！！！！", "utf-8"));*/
+        System.out.println(MD5.create().digestHex("我是谁！！！！！！！", StandardCharsets.UTF_8));
+
     }
 
     @Test
