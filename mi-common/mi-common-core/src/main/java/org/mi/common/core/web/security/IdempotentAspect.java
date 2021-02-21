@@ -26,9 +26,11 @@ public class IdempotentAspect implements Ordered {
 
     private final HttpServletRequest request;
 
-    private static String token;
+    // private static String token;
 
     private final RedisUtils redisUtils;
+
+    private static final ThreadLocal<String> token = new ThreadLocal<>();
 
     @SneakyThrows
     @Around("@annotation(Idempotent)")
@@ -39,20 +41,21 @@ public class IdempotentAspect implements Ordered {
             value = this.request.getParameter("title") + this.request.getParameter("content");
         }
         synchronized (this){
-            token = MD5.create().digestHex(value, StandardCharsets.UTF_8);
-            if (this.redisUtils.hasKey(token)){
+           //  token = MD5.create().digestHex(value, StandardCharsets.UTF_8);
+            token.set(MD5.create().digestHex(value, StandardCharsets.UTF_8));
+            if (this.redisUtils.hasKey(token.get())){
                 throw new RuntimeException("请勿重复提交请求");
             }
-            this.redisUtils.setIfNotExit(token);
+            this.redisUtils.setIfNotExit(token.get());
             return pjp.proceed();
         }
     }
 
     @AfterReturning("@annotation(Idempotent)")
     public void afterReturningAspect(){
-        if (StrUtil.isNotBlank(token)){
-            if (this.redisUtils.hasKey(token)){
-                this.redisUtils.del(token);
+        if (StrUtil.isNotBlank(token.get())){
+            if (this.redisUtils.hasKey(token.get())){
+                this.redisUtils.del(token.get());
             }
         }
     }

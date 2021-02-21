@@ -1,10 +1,13 @@
 package org.mi.post.test;
 
+import cn.hutool.core.codec.Base64;
 import cn.hutool.crypto.digest.MD5;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.nacos.common.utils.MD5Utils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.util.Base64Utils;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -53,6 +56,5 @@ public class CommonTest {
             Thread.sleep(2000);
             System.out.println(Thread.currentThread().getName() + i);
         }
-
     }
 }
