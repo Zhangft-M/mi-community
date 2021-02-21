@@ -44,8 +44,9 @@ public class ContentCheckConfig {
 
     @Bean
     public CmsClient cmsClient(){
-        Credential cred = new Credential("AKIDOq2UiQkTdVGlzz80e8RSHqBoBJLNxK2X",
-                "92e4HblxwoPnmX7QTgeBSSFetxtbdRLe");
+        // 腾讯内容检测配置
+        Credential cred = new Credential("",
+                "");
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("cms.tencentcloudapi.com");
         ClientProfile clientProfile = new ClientProfile();
