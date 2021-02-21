@@ -7,8 +7,8 @@ spring:
     name: MI-TOOL-SERVER
   cloud:
     alicloud:
-      access-key: LTAI4G6dh6WpfJXQXgHGzGi6
-      secret-key: XmXumSWCQawqxiXWhEmcVJF3aNil2g
+      access-key:
+      secret-key:
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com
     nacos:
@@ -26,22 +26,22 @@ spring:
         - 81.70.197.232:6396
   mail:
     host: smtp.qq.com
-    password: qyznrzfmcbfsbfhc
+    password:
     port: 465
-    username: zhangfangtao25@qq.com
+    username:
     protocol: smtps
   datasource:
-    url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    password: weihanhan1005
+    password:
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 100MB
 sms:
   config:
-    sign-name: ABC商城
-    template-code: SMS_207105138
+    sign-name:
+    template-code:
 
 rocketmq:
   name-server: 8.129.40.60:9876

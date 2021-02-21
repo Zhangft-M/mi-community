@@ -4,9 +4,9 @@ spring:
   application:
     name: MI-GATEWAY-SERVER
   datasource:
-    url: jdbc:mysql://cdb-bopgeseg.cd.tencentcdb.com:10054/gateway?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:10054/gateway?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    password: weihanhan1005
+    password:
   cloud:
     nacos:
       server-addr: 47.115.130.177:8848
@@ -28,9 +28,9 @@ spring:
 aliyun:
   captcha:
     region-id: cn-hangzhou
-    access-key-id: LTAI4G6dh6WpfJXQXgHGzGi6
-    access-key-secret: XmXumSWCQawqxiXWhEmcVJF3aNil2g
-    app-key: FFFF0N000000000098E9
+    access-key-id:
+    access-key-secret:
+    app-key:
 web:
   client:
     client-id: admin-web
