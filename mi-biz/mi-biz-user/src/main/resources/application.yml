@@ -1,3 +1,28 @@
+server:
+  port: 1006
 spring:
   profiles:
     active: dev
+  datasource:
+    url: jdbc:mysql://127.0.0.1:10054/mi-community?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: weihanhan1005
+    hikari:
+      max-lifetime: 250000
+  redis:
+    host: 82.156.250.238
+  application:
+    name: MI-USER-SERVER
+  cloud:
+    nacos:
+      server-addr: 47.115.130.177
+      discovery:
+        group: MI-DEV-GROUP
+logging:
+  file:
+    name: mi-post
+    path: E:\code\logfile
+rocketmq:
+  name-server: 82.156.250.238:9876
+  producer:
+    group: MI-USER-DEV-PRODUCER

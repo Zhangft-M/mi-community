@@ -4,20 +4,13 @@ spring:
   application:
     name: MI-AUTH-SERVER
   datasource:
-    url: jdbc:mysql://127.0.0.1:10054/authorization_server
+    url: jdbc:mysql://127.0.0.1:10054/authorization_server?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    password:
+    password: weihanhan1005
     hikari:
       max-lifetime: 300000
   redis:
-    cluster:
-      nodes:
-        - 81.70.197.232:6391
-        - 81.70.197.232:6392
-        - 81.70.197.232:6393
-        - 81.70.197.232:6394
-        - 81.70.197.232:6395
-        - 81.70.197.232:6396
+    host: 82.156.250.238
   cloud:
     nacos:
       server-addr: 47.115.130.177
@@ -46,6 +39,6 @@ auth:
         client-secret:
         redirect-uri: http://127.0.0.1:7071/third/callback/gitee
 rocketmq:
-  name-server: 8.129.40.60:9876
+  name-server: 82.156.250.238:9876
   producer:
     group: USERINFO-DEV-GROUP
